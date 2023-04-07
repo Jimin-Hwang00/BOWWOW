@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">notification</string>
+    <string name="dog_noti_id">반려견</string>
+    <string name="dog_noti_name">반려견 요구</string>
+</resources>
