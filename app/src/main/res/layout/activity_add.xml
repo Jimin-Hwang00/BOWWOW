@@ -8,20 +8,21 @@
     android:padding="24dp">
 
     <EditText
+        android:id="@+id/title_edit_text"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Title"
         android:ellipsize="end"
-        android:textSize="30dp"
-        android:textColor="@android:color/black"/>
+        android:hint="제목"
+        android:textColor="@android:color/black"
+        android:textSize="30dp" />
 
     <EditText
-        android:id="@+id/add_editView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:id="@+id/content_edit_text"
+        android:layout_width="362dp"
+        android:layout_height="620dp"
         android:background="@android:color/transparent"
-        android:inputType="textMultiLine"
-        android:hint="자유롭게 작성해보세요."/>
+        android:hint="자유롭게 작성해보세요."
+        android:inputType="textMultiLine" />
 
 
 </LinearLayout>

@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<testsuite tests="0" failures="0" errors="0" skipped="0" time="1.680832165923E9" timestamp="2023-04-07T01:49:25" hostname="localhost">
+  <properties>
+    <property name="device" value="Pixel_2_API_31(AVD)" />
+    <property name="flavor" value="" />
+    <property name="project" value=":notification" />
+  </properties>
+  <system-err>Exception thrown during onBeforeAll invocation of plugin com.google.testing.platform.plugin.android.AndroidDevicePlugin.
+Failed to install APK(s): /Users/hwangjimin/Documents/BW/bowwow/notification/build/intermediates/apk/androidTest/debug/notification-debug-androidTest.apk
+Unknown failure: cmd: Failure calling service package: Broken pipe (32)
+com.android.ddmlib.InstallException: Unknown failure: cmd: Failure calling service package: Broken pipe (32)
+	at com.android.ddmlib.internal.DeviceImpl.installRemotePackage(DeviceImpl.java:1315)
+	at com.android.ddmlib.internal.DeviceImpl.installPackage(DeviceImpl.java:1141)
+	at com.android.tools.utp.plugins.deviceprovider.ddmlib.DdmlibAndroidDevice.installPackage(DdmlibAndroidDevice.kt)
+	at com.android.tools.utp.plugins.deviceprovider.ddmlib.DdmlibAndroidDeviceController$executeAsync$deferred$1.invokeSuspend(DdmlibAndroidDeviceController.kt:173)
+	at kotlin.coroutines.jvm.internal.BaseContinuationImpl.resumeWith(ContinuationImpl.kt:33)
+	at kotlinx.coroutines.DispatchedTask.run(DispatchedTask.kt:106)
+	at kotlinx.coroutines.scheduling.CoroutineScheduler.runSafely(CoroutineScheduler.kt:571)
+	at kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.executeTask(CoroutineScheduler.kt:750)
+	at kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.runWorker(CoroutineScheduler.kt:678)
+	at kotlinx.coroutines.scheduling.CoroutineScheduler$Worker.run(CoroutineScheduler.kt:665)
+
+</system-err>
+</testsuite>

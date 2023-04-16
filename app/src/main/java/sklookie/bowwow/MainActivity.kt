@@ -1,59 +1,24 @@
-package sklookie.bowwow.community
+package sklookie.bowwow
 
-import android.app.Activity
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.util.Log
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.recyclerview.widget.DividerItemDecoration
-import androidx.recyclerview.widget.LinearLayoutManager
-import sklookie.bowwow.community.databinding.ActivityMainBinding
+import android.view.View
+import sklookie.bowwow.community.CommunityActivity
 
 class MainActivity : AppCompatActivity() {
 
-    lateinit var binding: ActivityMainBinding
-    var datas: MutableList<String>? = null
-    lateinit var adapter: MyAdapter
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding= ActivityMainBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        setContentView(R.layout.activity_main)
+    }
 
-        //registerForActivityResult() 메서드를 사용하여 액티비티 결과 처리
-        val requestLauncher: ActivityResultLauncher<Intent> = registerForActivityResult(
-            ActivityResultContracts.StartActivityForResult()){
-            it.data!!.getStringExtra("result")?.let {
-                datas?.add(it)
-                adapter.notifyDataSetChanged()
+    fun onClick(v: View) {
+        when (v.id) {
+            R.id.community_image -> {
+                val intent = Intent(this, CommunityActivity::class.java)
+                startActivity(intent)
             }
         }
-
-        binding.mainFab.setOnClickListener {
-            val intent = Intent(this, AddActivity::class.java)
-            requestLauncher.launch(intent)
-        }
-        //data 불러오기 및 mutableList에 저장
-        datas = savedInstanceState?.let {
-            it.getStringArrayList("datas")?.toMutableList()
-        } ?: let {
-            mutableListOf<String>()
-        }
-
-        // RecyclerView 설정
-        val layoutManager = LinearLayoutManager(this)
-        binding.mainRecyclerView.layoutManager=layoutManager
-        adapter=MyAdapter(datas)
-        binding.mainRecyclerView.adapter=adapter
-        binding.mainRecyclerView.addItemDecoration(
-            DividerItemDecoration(this, LinearLayoutManager.VERTICAL)
-        )
-    }
-    //화면에서 사용된 데이터 저장
-    override fun onSaveInstanceState(outState: Bundle) {
-        super.onSaveInstanceState(outState)
-        outState.putStringArrayList("datas", ArrayList(datas))
     }
 }
