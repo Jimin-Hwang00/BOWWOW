@@ -13,6 +13,7 @@ import sklookie.bowwow.databinding.UserinfoBinding
 
 class BellActivity : AppCompatActivity() {
 
+
     lateinit var binding : BellBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

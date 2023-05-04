@@ -15,6 +15,7 @@
         android:scaleY="4"
         android:layout_height="182dp" />
 
+
     <TextView
         android:id="@+id/appName"
         android:layout_width="wrap_content"
@@ -40,10 +41,7 @@
         android:layout_marginTop="20dp"
         android:layout_marginBottom="20dp"
         android:ems="10"
-        android:background="@drawable/name_edit"
-        android:inputType="textPersonName"
-        android:hint="이름을 입력해주세요."
-        />
+        android:background="@drawable/name_edit"/>
 
     <LinearLayout
         android:layout_width="match_parent"
