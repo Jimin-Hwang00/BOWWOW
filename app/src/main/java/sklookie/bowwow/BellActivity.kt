@@ -10,7 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import sklookie.bowwow.databinding.UserinfoBinding
 
 
-class UserInfoActivity : AppCompatActivity() {
+class BellActivity : AppCompatActivity() {
 
     lateinit var binding : UserinfoBinding
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -20,17 +20,17 @@ class UserInfoActivity : AppCompatActivity() {
 
         //진행상황 30%설정
         var progressbar = binding.progressBar
-        progressbar.setProgress(10)
+        progressbar.setProgress(80)
 
         var spinner = binding.spinner
-        spinner.adapter = ArrayAdapter.createFromResource(this, R.array.itemList, android.R.layout.simple_spinner_item)
+        spinner.adapter = ArrayAdapter.createFromResource(this, R.array.bellList, android.R.layout.simple_spinner_item)
 
         binding.nextBtn.setOnClickListener{
-            val intent = Intent(this, DogInfoActivity::class.java)
+            val intent = Intent(this, CompleteActivity::class.java)
             startActivity(intent)
         }
         binding.backBtn.setOnClickListener{
-            val intent = Intent(this, MainActivity::class.java)
+            val intent = Intent(this, DogInfoActivity::class.java)
             startActivity(intent)
         }
     }
