@@ -7,15 +7,16 @@ import android.os.Looper
 import android.widget.ArrayAdapter
 import android.widget.ProgressBar
 import androidx.appcompat.app.AppCompatActivity
+import sklookie.bowwow.databinding.BellBinding
 import sklookie.bowwow.databinding.UserinfoBinding
 
 
 class BellActivity : AppCompatActivity() {
 
-    lateinit var binding : UserinfoBinding
+    lateinit var binding : BellBinding
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = UserinfoBinding.inflate(layoutInflater)
+        binding = BellBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         //진행상황 30%설정

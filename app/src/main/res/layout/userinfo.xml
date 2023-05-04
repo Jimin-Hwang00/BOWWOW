@@ -12,12 +12,9 @@
         android:id="@+id/progressBar"
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="341dp"
+        android:scaleY="4"
         android:layout_height="182dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
+        android:layout_gravity="center"/>
     <TextView
         android:id="@+id/appName"
         android:layout_width="wrap_content"
@@ -37,9 +34,13 @@
 
     <EditText
         android:id="@+id/editTextTextPersonName"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
+        android:width="250dp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="20dp"
         android:ems="10"
+        android:background="@drawable/name_edit"
         android:inputType="textPersonName"
         android:hint="이름을 입력해주세요."
         />
@@ -55,8 +56,11 @@
 
     <Spinner
         android:id="@+id/spinner"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:minWidth="200dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="20dp"
         android:paddingVertical="10dp" />
 
     <LinearLayout
