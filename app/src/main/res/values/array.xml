@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="itemList">
+        <item>네/보청기</item>
+        <item>네/OOO</item>
+        <item>네/기타</item>
+        <item>아니요</item>
+    </string-array>
+</resources>
