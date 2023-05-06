@@ -34,9 +34,10 @@
         android:textStyle="bold" />
 
     <EditText
-        android:id="@+id/editTextTextPersonName"
+        android:id="@+id/dogName"
         android:layout_width="wrap_content"
         android:width="250dp"
+        android:hint="반려견 이름"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:layout_marginBottom="20dp"
