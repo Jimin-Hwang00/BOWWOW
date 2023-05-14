@@ -1,28 +1,60 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/constrainLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="24dp">
+    android:padding="20dp">
 
     <EditText
         android:id="@+id/title_edit_text"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_width="335dp"
+        android:layout_height="63dp"
+        android:layout_marginStart="18dp"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/border"
         android:ellipsize="end"
-        android:hint="제목"
+        android:hint="제목을 입력해주세요."
+        android:padding="10dp"
         android:textColor="@android:color/black"
-        android:textSize="30dp" />
+        android:textSize="30dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
-    <EditText
-        android:id="@+id/content_edit_text"
-        android:layout_width="362dp"
-        android:layout_height="620dp"
-        android:background="@android:color/transparent"
-        android:hint="자유롭게 작성해보세요."
-        android:inputType="textMultiLine" />
+    <ScrollView
+        android:layout_width="333dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="18dp"
+        android:layout_marginTop="380dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <EditText
+                android:id="@+id/content_edit_text"
+                android:layout_width="match_parent"
+                android:layout_height="263dp"
+                android:background="@drawable/border"
+                android:hint="자유롭게 작성해보세요."
+                android:inputType="textMultiLine"
+                android:padding="10dp" />
+        </LinearLayout>
+    </ScrollView>
+
+    <ImageView
+        android:id="@+id/add_image_view"
+        android:layout_width="199dp"
+        android:layout_height="243dp"
+        android:layout_marginStart="80dp"
+        android:layout_marginTop="104dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:srcCompat="@mipmap/camera_icon" />
 
 
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

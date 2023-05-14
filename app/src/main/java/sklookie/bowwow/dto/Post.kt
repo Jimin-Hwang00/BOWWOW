@@ -1,21 +1,27 @@
 package sklookie.bowwow.dto
 
+import android.os.Parcel
+import android.os.Parcelable
 import com.google.firebase.database.Exclude
 import com.google.firebase.database.IgnoreExtraProperties
+import kotlinx.android.parcel.Parcelize
 import java.io.Serializable
 
+
 @IgnoreExtraProperties
-data class Post(
+data class Post (
     var pid: String?,
     var title: String?,
     var content: String?,
     var date: String?,
-    var uid: String?
+    var uid: String?,
+    var views: String?,
+    var image: String?
     ) : Serializable {
 
-    constructor() : this("", "", "", "", "")
+    constructor() : this("", "", "", "", "", "0", "")
 
-    constructor(title: String, content: String?, date: String?, uid: String?) : this("", title, content, date, uid) {
+    constructor(title: String, content: String?, date: String?, uid: String?) : this("", title, content, date, uid, "0", "") {
         this.title = title
         this.content = content
         this.date = date
@@ -34,6 +40,6 @@ data class Post(
     }
 
     override fun toString(): String {
-        return "pid: ${pid}, title: ${title}, content: ${content}, date: ${date}, uid: ${uid}"
+        return "pid: ${pid}, title: ${title}, content: ${content}, date: ${date}, uid: ${uid}, views: ${views}, image: ${image}"
     }
 }

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/image_edit_change"
+        android:title="이미지 수정 및 추가" />
+    <item
+        android:id="@+id/image_edit_delete"
+        android:title="이미지 삭제" />
+</menu>

@@ -1,9 +1,14 @@
 package sklookie.bowwow.community
 
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.os.Bundle
+import android.util.Base64
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import sklookie.bowwow.R
@@ -23,10 +28,16 @@ class PostActivity : AppCompatActivity() {
 
         post = intent.getSerializableExtra("post") as Post
 
+        var views = post.views!!.toInt()
+        post.views = (++views).toString()
+        dao.updateViews(post.pid.toString(), views)
+
         findViewById<TextView>(R.id.title_text_view).text = post.title
         findViewById<TextView>(R.id.uid_text_view).text = post.uid
         findViewById<TextView>(R.id.date_text_view).text = post.date
         findViewById<TextView>(R.id.content_text_view).text = post.content
+        findViewById<TextView>(R.id.views_text_view).text = post.views.toString()
+        findViewById<ImageView>(R.id.postImageView).setImageBitmap(StringToBitmap(post.image!!))
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -52,5 +63,17 @@ class PostActivity : AppCompatActivity() {
             true
         }
         else -> true
+    }
+
+    fun StringToBitmap(string: String): Bitmap? {
+        try {
+            val encodeByte = Base64.decode(string, Base64.DEFAULT)
+            val bitmap = BitmapFactory.decodeByteArray(encodeByte, 0, encodeByte.size)
+
+            return bitmap
+        } catch (e: java.lang.Exception) {
+            Log.e("StringToBitmap", e.message.toString())
+            return null;
+        }
     }
 }
