@@ -19,10 +19,6 @@ class CompleteActivity : AppCompatActivity() {
         binding = CompleteBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        val database = Firebase.database
-        val myRef = database.getReference("UserInfo")
-        var userInfo : UserInfoModel = UserInfoModel()
-
         //진행상황 100%설정
         var progressbar = binding.progressBar
         progressbar.setProgress(100)
