@@ -17,7 +17,6 @@ import sklookie.bowwow.R
 import sklookie.bowwow.dto.Post
 
 class CommunityActivity : AppCompatActivity() {
-
     val TAG = "MainActivity"
 
     var datas = mutableListOf<Post>()
@@ -29,6 +28,8 @@ class CommunityActivity : AppCompatActivity() {
 
     lateinit var sortByDateBtn: Button
     lateinit var sortByViewsBtn: Button
+
+    var sortedByView: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,42 +50,22 @@ class CommunityActivity : AppCompatActivity() {
         dbReference.addValueEventListener(postListener)
 
         sortByDateBtn.setOnClickListener {
-            datas.sortByDescending { it.date }
-
-            adapter.datas = datas
-
-            for (data in adapter.datas) {
-                Log.d(TAG, "sorted by date: " + data.toString())
-            }
-
-            mainRecyclerView.layoutManager?.removeAllViews()
-            adapter.notifyDataSetChanged()
-
-            sortByDateBtn.setBackgroundColor(Color.parseColor("#2196F3"))
-            sortByViewsBtn.setBackgroundColor(Color.parseColor("#BDBEC3"))
+            sortingByDate()
         }
 
         sortByViewsBtn.setOnClickListener {
-            Log.d(TAG, "sortByViewsBtn Clicked!")
-            datas.sortByDescending { it.views?.toDouble() }
+            sortingByViews()
+        }
 
+        findViewById<Button>(R.id.searchBtn).setOnClickListener {
             adapter.datas = datas
 
-            for (data in datas) {
-                Log.d(TAG, "sorted by vies: " + data.toString())
-            }
-            mainRecyclerView.layoutManager?.removeAllViews()
+            val searchKeyword = findViewById<EditText>(R.id.searchEditText).text.toString()
+            val result = adapter.findPostsByKeyword(searchKeyword)
+            adapter.datas = result as MutableList<Post>
+
             adapter.notifyDataSetChanged()
-
-            sortByDateBtn.setBackgroundColor(Color.parseColor("#BDBEC3"))
-            sortByViewsBtn.setBackgroundColor(Color.parseColor("#2196F3"))
         }
-    }
-
-    override fun onResume() {
-        super.onResume()
-        sortByDateBtn.setBackgroundColor(Color.parseColor("#2196F3"))
-        sortByViewsBtn.setBackgroundColor(Color.parseColor("#BDBEC3"))
     }
 
     private fun initRecycler() {
@@ -128,5 +109,57 @@ class CommunityActivity : AppCompatActivity() {
         override fun onCancelled(error: DatabaseError) {
             Log.e("MainActivity", "게시글 불러오기 취소")
         }
+    }
+
+//    날짜 순으로 게시글 정렬
+    fun sortingByDate() {
+        sortedByView = false
+
+        adapter.datas = datas
+        datas.sortByDescending { it.date }
+        adapter.datas = datas
+
+        mainRecyclerView.layoutManager?.removeAllViews()
+        adapter.notifyDataSetChanged()
+
+        sortByDateBtn.setBackgroundColor(Color.parseColor("#2196F3"))
+        sortByViewsBtn.setBackgroundColor(Color.parseColor("#BDBEC3"))
+    }
+
+//    조회수 순으로 게시글 정렬
+    fun sortingByViews() {
+        sortedByView = true
+
+        adapter.datas = datas
+        datas.sortByDescending { it.views?.toDouble() }
+        adapter.datas = datas
+
+        mainRecyclerView.layoutManager?.removeAllViews()
+        adapter.notifyDataSetChanged()
+
+        sortByDateBtn.setBackgroundColor(Color.parseColor("#BDBEC3"))
+        sortByViewsBtn.setBackgroundColor(Color.parseColor("#2196F3"))
+    }
+
+    override fun onStop() {
+        val bundle: Bundle = Bundle()
+        bundle.putBoolean("sortedByView", sortedByView)     // bundle에 정렬 방법(날짜 혹은 조회수) 저장
+
+        getIntent().putExtra("bundle", bundle)
+        super.onStop()
+    }
+
+    override fun onResume() {
+        val bundle = getIntent().getBundleExtra("bundle")
+
+        if (bundle != null) {                               // bundle에 저장된 정렬 방법 확인
+            if (bundle.getBoolean("sortedByView")) {
+                sortingByViews()
+            } else {
+                sortingByDate()
+            }
+        }
+
+        super.onResume()
     }
 }

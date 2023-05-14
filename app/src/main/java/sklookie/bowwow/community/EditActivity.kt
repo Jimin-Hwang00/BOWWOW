@@ -98,6 +98,7 @@ class EditActivity : AppCompatActivity() {
         }
     }
 
+//    이미지 선택 완료 시 Glide를 이용하여 이미지 띄우기
     val activityResult: ActivityResultLauncher<Intent> = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()) {
         if (it.resultCode == RESULT_OK && it.data != null) {
@@ -132,6 +133,7 @@ class EditActivity : AppCompatActivity() {
         else -> true
     }
 
+//    bitmap을 String으로 변경 (서버에 저장하기 위함)
     fun bitmapToString(bitmap: Bitmap): String {
         val stream = ByteArrayOutputStream()
         if (bitmap != null) {
@@ -143,6 +145,7 @@ class EditActivity : AppCompatActivity() {
         return Base64.encodeToString(bytes, Base64.NO_WRAP)
     }
 
+//    String을 Bitmap으로 변경 (서버에 저장된 이미지 String을 이미지 뷰에 띄우기 위함)
     fun StringToBitmap(string: String): Bitmap? {
         try {
             val encodeByte = Base64.decode(string, Base64.DEFAULT)

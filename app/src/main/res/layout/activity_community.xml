@@ -9,8 +9,8 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/main_recyclerView"
         android:layout_width="410dp"
-        android:layout_height="630dp"
-        android:layout_marginTop="100dp"
+        android:layout_height="517dp"
+        android:layout_marginTop="104dp"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -19,8 +19,8 @@
         android:id="@+id/write_Btn"
         android:layout_width="109dp"
         android:layout_height="54dp"
-        android:layout_marginRight="32dp"
-        android:layout_marginBottom="52dp"
+        android:layout_marginRight="28dp"
+        android:layout_marginBottom="124dp"
         android:text="작성"
         android:textSize="15dp"
         app:icon="@android:drawable/ic_input_add"
@@ -49,5 +49,29 @@
         android:text="인기글"
         app:layout_constraintStart_toEndOf="@+id/sortByDateBtn"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <EditText
+        android:id="@+id/searchEditText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="52dp"
+        android:layout_marginBottom="32dp"
+        android:ems="10"
+        android:hint="@string/communitySearch"
+        android:inputType="textPersonName"
+        android:minHeight="48dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/searchBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:layout_marginBottom="32dp"
+        android:backgroundTint="#2196F3"
+        android:text="검색"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/searchEditText" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

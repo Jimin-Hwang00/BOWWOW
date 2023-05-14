@@ -24,8 +24,6 @@ import sklookie.bowwow.dao.CommunityDAO
 import java.io.ByteArrayOutputStream
 
 class AddActivity : AppCompatActivity() {
-    val TAG = "AddActivity"
-
     val dao = CommunityDAO()
 
     lateinit var imageView: ImageView
@@ -42,12 +40,13 @@ class AddActivity : AppCompatActivity() {
         imageView.setOnClickListener {
             val imageMenu = PopupMenu(applicationContext, it)
 
+//            이미지 누를 시 메뉴 생성
             menuInflater?.inflate(R.menu.menu_add_image, imageMenu.menu)
             imageMenu.show()
             imageMenu.setOnMenuItemClickListener {
                 when(it.itemId) {
-                    R.id.image_edit_change -> {
-                        ActivityCompat.requestPermissions(this@AddActivity, arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE), 1)
+                    R.id.image_edit_change -> {     // 이미지 추가
+                        ActivityCompat.requestPermissions(this@AddActivity, arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE), 1)      // 퍼미션 요구 (1회만)
 
                         if (ContextCompat.checkSelfPermission(this@AddActivity.applicationContext, android.Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
                             val intent = Intent(Intent.ACTION_PICK)
@@ -61,9 +60,9 @@ class AddActivity : AppCompatActivity() {
                         true
                     }
                     R.id.image_edit_delete -> {
-                        if (imageUrl.equals("")) {
+                        if (imageUrl.equals("")) {      // 선택된 이미지가 없는 상태에서 이미지 삭제 버튼 누름
                             Toast.makeText(applicationContext, "선택된 이미지가 없습니다.", Toast.LENGTH_SHORT).show()
-                        } else {
+                        } else {                               // 이미지 삭제
                             imageUrl = ""
                             imageView.setImageResource(R.mipmap.camera_icon)
                             Toast.makeText(applicationContext, "이미지가 삭제되었습니다.", Toast.LENGTH_SHORT).show()
@@ -78,7 +77,7 @@ class AddActivity : AppCompatActivity() {
         }
     }
 
-
+//    이미지 선택 완료 시 Glide를 이용하여 이미지 띄우기
     val activityResult: ActivityResultLauncher<Intent> = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()) {
         if (it.resultCode == RESULT_OK && it.data != null) {
@@ -120,6 +119,7 @@ class AddActivity : AppCompatActivity() {
         else -> true
     }
 
+//    bitmap을 String으로 변경 (서버에 저장하기 위함)
     fun bitmapToString(bitmap: Bitmap?): String {
         val stream = ByteArrayOutputStream()
         if (bitmap != null) {

@@ -21,6 +21,7 @@ import sklookie.bowwow.dto.Post
 class PostAdapter(private val context: Context) : RecyclerView.Adapter<PostAdapter.ViewHolder>() {
 
     var datas = mutableListOf<Post>()
+
     override fun getItemCount(): Int {
         return datas.size
     }
@@ -77,5 +78,18 @@ class PostAdapter(private val context: Context) : RecyclerView.Adapter<PostAdapt
             Log.e("StringToBitmap", e.message.toString())
             return null;
         }
+    }
+
+//    게시글 검색
+    fun findPostsByKeyword(keyword: String): List<Post> {
+        var result = mutableListOf<Post>()
+
+        for (post in datas) {
+            if (post.content!!.contains(keyword) || post.title!!.contains(keyword)) {
+                result.add(post)
+            }
+        }
+
+        return result
     }
 }

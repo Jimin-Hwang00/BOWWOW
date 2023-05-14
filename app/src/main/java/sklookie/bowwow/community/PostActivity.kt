@@ -65,6 +65,7 @@ class PostActivity : AppCompatActivity() {
         else -> true
     }
 
+//    //    String을 Bitmap으로 변경 (서버에 저장된 이미지 String을 이미지 뷰에 띄우기 위함)
     fun StringToBitmap(string: String): Bitmap? {
         try {
             val encodeByte = Base64.decode(string, Base64.DEFAULT)

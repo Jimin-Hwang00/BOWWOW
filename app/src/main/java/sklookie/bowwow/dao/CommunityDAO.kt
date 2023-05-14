@@ -3,6 +3,7 @@ package sklookie.bowwow.dao
 import android.util.Log
 import com.google.firebase.database.*
 import com.google.firebase.firestore.FirebaseFirestore
+import sklookie.bowwow.dto.Post
 import java.time.Instant
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
