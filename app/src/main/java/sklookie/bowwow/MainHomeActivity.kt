@@ -26,7 +26,9 @@ class MainHomeActivity : AppCompatActivity() {
         myRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 val value = snapshot?.child("userName")
+                val dogValue = snapshot?.child("dogName")
                 binding.userName.setText("${value?.value}님")
+                binding.bellText.setText("${dogValue?.value}이의 \n벨훈련")
             }
 
             override fun onCancelled(error: DatabaseError) {

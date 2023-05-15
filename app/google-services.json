@@ -1,0 +1,40 @@
+{
+  "project_info": {
+    "project_number": "71455940177",
+    "firebase_url": "https://bowwow-fb9f8-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "bowwow-fb9f8",
+    "storage_bucket": "bowwow-fb9f8.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:71455940177:android:90c8448cd0db5cb8626270",
+        "android_client_info": {
+          "package_name": "sklookie.bowwow"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "71455940177-nsr52h0jihmn06dpfqjkkjcvke47vueh.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyANvyGxT9K4J0TGwHKNKmptfsM2Y0lhLP0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "71455940177-nsr52h0jihmn06dpfqjkkjcvke47vueh.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
