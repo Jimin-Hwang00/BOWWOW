@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -21,12 +22,15 @@ class MainHomeActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         val database = Firebase.database
-        val myRef = database.getReference("UserInfo")
+        val myRef = database.getReference("userInfo")
+        val id : String = intent.getStringExtra("id").toString()
 
         myRef.addValueEventListener(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
-                val value = snapshot?.child("userName")
-                val dogValue = snapshot?.child("dogName")
+                val value = snapshot?.child(id)?.child("userName")
+                val dogValue = snapshot?.child(id)?.child("dogName")
+
+
                 binding.userName.setText("${value?.value}님")
                 binding.bellText.setText("${dogValue?.value}이의 \n벨훈련")
             }

@@ -21,8 +21,9 @@ class BellActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         val database = Firebase.database
-        val myRef = database.getReference("UserInfo")
+        val myRef = database.getReference("userInfo")
         var userInfo : UserInfoModel = UserInfoModel()
+        val id : String = intent.getStringExtra("id").toString()
 
         //진행상황 30%설정
         var progressbar = binding.progressBar
@@ -35,7 +36,8 @@ class BellActivity : AppCompatActivity() {
         binding.nextBtn.setOnClickListener{
             val intent = Intent(this, CompleteActivity::class.java)
             userInfo.bell = spinner.selectedItem.toString()
-            myRef.child("bell").setValue(userInfo.bell)
+            myRef.child(id).child("bell").setValue(userInfo.bell)
+            intent.putExtra("id", id)
             startActivity(intent)
         }
         binding.backBtn.setOnClickListener{

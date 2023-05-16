@@ -19,8 +19,9 @@ class DogInfoActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         val database = Firebase.database
-        val myRef = database.getReference("UserInfo")
+        val myRef = database.getReference("userInfo")
         var userInfo : UserInfoModel = UserInfoModel()
+        val id : String = intent.getStringExtra("id").toString()
 
         //진행상황: 50%
         var progressbar = binding.progressBar
@@ -31,7 +32,8 @@ class DogInfoActivity : AppCompatActivity() {
         binding.nextBtn.setOnClickListener{
             val intent = Intent(this, BellActivity::class.java)
             userInfo.dogName = binding.dogName.text.toString()
-            myRef.child("dogName").setValue(userInfo.dogName)
+            myRef.child(id).child("dogName").setValue(userInfo.dogName)
+            intent.putExtra("id", id)
             startActivity(intent)
         }
         binding.backBtn.setOnClickListener{

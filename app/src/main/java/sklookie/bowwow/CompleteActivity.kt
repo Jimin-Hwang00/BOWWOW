@@ -19,6 +19,7 @@ class CompleteActivity : AppCompatActivity() {
         binding = CompleteBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        val id : String = intent.getStringExtra("id").toString()
         //진행상황 100%설정
         var progressbar = binding.progressBar
         progressbar.setProgress(100)
@@ -27,6 +28,7 @@ class CompleteActivity : AppCompatActivity() {
         //3초후 자동 화면 전환
         Handler(Looper.getMainLooper()).postDelayed(Runnable {
             val intent = Intent(this@CompleteActivity, MainHomeActivity::class.java)
+            intent.putExtra("id", id)
             startActivity(intent)
         }, 2000)
     }

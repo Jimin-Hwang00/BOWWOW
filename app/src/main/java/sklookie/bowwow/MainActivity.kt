@@ -13,13 +13,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-        val database = Firebase.database
-        val myRef = database.getReference("UserInfo")
-        var userInfo : UserInfoModel = UserInfoModel()
-
-        //시작 화면으로 돌아오면, 정보 초기화 작업
-        myRef.setValue(null)
+        
 
         //3초후 자동 화면 전환
         Handler(Looper.getMainLooper()).postDelayed(Runnable {
