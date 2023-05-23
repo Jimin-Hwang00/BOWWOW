@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="itemList">
+        <item>네/보청기</item>
+        <item>네/OOO</item>
+        <item>네/기타</item>
+        <item>아니요</item>
+    </string-array>
+
+    <string-array name="bellList">
+        <item>물</item>
+        <item>밥</item>
+        <item>간식</item>
+        <item>산책</item>
+        <item>공놀이</item>
+        <item>애견패드</item>
+    </string-array>
+</resources>

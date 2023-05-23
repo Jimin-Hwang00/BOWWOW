@@ -20,6 +20,8 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import com.bumptech.glide.Glide
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import sklookie.bowwow.MainHomeActivity
 import sklookie.bowwow.R
 import sklookie.bowwow.dao.CommunityDAO
 import sklookie.bowwow.dto.Post
@@ -41,6 +43,10 @@ class EditActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add)
+
+        findViewById<BottomNavigationView>(R.id.btmMenu).setOnNavigationItemReselectedListener { menuItem ->
+            BottomNavigate(menuItem.itemId)
+        }
 
         val intent = intent
 
@@ -64,29 +70,43 @@ class EditActivity : AppCompatActivity() {
             menuInflater?.inflate(R.menu.menu_edit_image, imageMenu.menu)
             imageMenu.show()
             imageMenu.setOnMenuItemClickListener {
-                when(it.itemId) {
+                when (it.itemId) {
                     R.id.image_edit_change -> {
-                        ActivityCompat.requestPermissions(this@EditActivity, arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE), 1)
+                        ActivityCompat.requestPermissions(
+                            this@EditActivity,
+                            arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE),
+                            1
+                        )
 
-                        if (ContextCompat.checkSelfPermission(this@EditActivity.applicationContext, android.Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                        if (ContextCompat.checkSelfPermission(
+                                this@EditActivity.applicationContext,
+                                android.Manifest.permission.READ_EXTERNAL_STORAGE
+                            ) == PackageManager.PERMISSION_GRANTED
+                        ) {
                             val intent = Intent(Intent.ACTION_PICK)
                             intent.type = "image/*"
 
                             activityResult.launch(intent)
                         } else {
-                            Toast.makeText(this@EditActivity, "갤러리 접근 권한이 거부돼 있습니다. 설정에서 접근을 허용해 주세요.", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(
+                                this@EditActivity,
+                                "갤러리 접근 권한이 거부돼 있습니다. 설정에서 접근을 허용해 주세요.",
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
 
                         true
                     }
                     R.id.image_edit_delete -> {
                         if (imageString.isNullOrBlank()) {
-                            Toast.makeText(applicationContext, "선택된 이미지가 없습니다.", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(applicationContext, "선택된 이미지가 없습니다.", Toast.LENGTH_SHORT)
+                                .show()
                         } else {
                             imageUrl = ""
                             imageString = ""
                             imageView.setImageResource(R.mipmap.camera_icon)
-                            Toast.makeText(applicationContext, "이미지가 삭제되었습니다.", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(applicationContext, "이미지가 삭제되었습니다.", Toast.LENGTH_SHORT)
+                                .show()
                         }
                         true
                     }
@@ -98,9 +118,10 @@ class EditActivity : AppCompatActivity() {
         }
     }
 
-//    이미지 선택 완료 시 Glide를 이용하여 이미지 띄우기
+    //    이미지 선택 완료 시 Glide를 이용하여 이미지 띄우기
     val activityResult: ActivityResultLauncher<Intent> = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()) {
+        ActivityResultContracts.StartActivityForResult()
+    ) {
         if (it.resultCode == RESULT_OK && it.data != null) {
             imageUrl = it.data!!.data.toString()
 
@@ -115,7 +136,7 @@ class EditActivity : AppCompatActivity() {
         return super.onCreateOptionsMenu(menu)
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean = when(item.itemId){
+    override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
         R.id.menu_add_save -> {
             val title = titleEditText.text.toString()
             val content = contentEditText.text.toString()
@@ -133,7 +154,7 @@ class EditActivity : AppCompatActivity() {
         else -> true
     }
 
-//    bitmap을 String으로 변경 (서버에 저장하기 위함)
+    //    bitmap을 String으로 변경 (서버에 저장하기 위함)
     fun bitmapToString(bitmap: Bitmap): String {
         val stream = ByteArrayOutputStream()
         if (bitmap != null) {
@@ -145,7 +166,7 @@ class EditActivity : AppCompatActivity() {
         return Base64.encodeToString(bytes, Base64.NO_WRAP)
     }
 
-//    String을 Bitmap으로 변경 (서버에 저장된 이미지 String을 이미지 뷰에 띄우기 위함)
+    //    String을 Bitmap으로 변경 (서버에 저장된 이미지 String을 이미지 뷰에 띄우기 위함)
     fun StringToBitmap(string: String): Bitmap? {
         try {
             val encodeByte = Base64.decode(string, Base64.DEFAULT)
@@ -156,5 +177,29 @@ class EditActivity : AppCompatActivity() {
             Log.e("StringToBitmap", e.message.toString())
             return null;
         }
+    }
+
+    fun BottomNavigate(id: Int) {
+        val tag = id.toString()
+        val fragmentManager = supportFragmentManager
+        val fragmentTransaction = fragmentManager.beginTransaction()
+
+        val currentFragment = fragmentManager.primaryNavigationFragment
+        if (currentFragment != null) {
+            fragmentTransaction.hide(currentFragment)
+        }
+
+        var fragment = fragmentManager.findFragmentByTag(tag)
+        if (fragment == null) {
+            if (id == R.id.menu1) {
+                val intent = Intent(this, MainHomeActivity::class.java)
+                startActivity(intent)
+            }
+            if (id == R.id.menu4) {
+                val intent = Intent(this, CommunityActivity::class.java)
+                startActivity(intent)
+            }
+        }
+
     }
 }

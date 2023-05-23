@@ -19,6 +19,8 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import com.bumptech.glide.Glide
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import sklookie.bowwow.MainHomeActivity
 import sklookie.bowwow.R
 import sklookie.bowwow.dao.CommunityDAO
 import java.io.ByteArrayOutputStream
@@ -35,8 +37,11 @@ class AddActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add)
 
-        imageView = findViewById<ImageView>(R.id.add_image_view)
+        findViewById<BottomNavigationView>(R.id.btmMenu).setOnNavigationItemReselectedListener {menuItem ->
+            BottomNavigate(menuItem.itemId)
+        }
 
+        imageView = findViewById<ImageView>(R.id.add_image_view)
         imageView.setOnClickListener {
             val imageMenu = PopupMenu(applicationContext, it)
 
@@ -129,5 +134,28 @@ class AddActivity : AppCompatActivity() {
         val bytes = stream.toByteArray()
 
         return Base64.encodeToString(bytes, Base64.NO_WRAP)
+    }
+
+    fun BottomNavigate(id : Int) {
+        val tag = id.toString()
+        val fragmentManager = supportFragmentManager
+        val fragmentTransaction = fragmentManager.beginTransaction()
+
+        val currentFragment = fragmentManager.primaryNavigationFragment
+        if (currentFragment != null) {
+            fragmentTransaction.hide(currentFragment)
+        }
+
+        var fragment = fragmentManager.findFragmentByTag(tag)
+        if (fragment == null) {
+            if (id == R.id.menu1) {
+                val intent = Intent(this, MainHomeActivity::class.java)
+                startActivity(intent)
+            }
+            if (id == R.id.menu4) {
+                val intent = Intent(this, CommunityActivity::class.java)
+                startActivity(intent)
+            }
+        }
     }
 }

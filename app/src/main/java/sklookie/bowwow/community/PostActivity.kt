@@ -11,6 +11,8 @@ import android.view.MenuItem
 import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import com.google.android.material.bottomnavigation.BottomNavigationView
+import sklookie.bowwow.MainHomeActivity
 import sklookie.bowwow.R
 import sklookie.bowwow.dao.CommunityDAO
 import sklookie.bowwow.dto.Post
@@ -23,6 +25,10 @@ class PostActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_post)
+
+        findViewById<BottomNavigationView>(R.id.btmMenu).setOnNavigationItemReselectedListener { menuItem ->
+            BottomNavigate(menuItem.itemId)
+        }
 
         val intent = getIntent()
 
@@ -45,7 +51,7 @@ class PostActivity : AppCompatActivity() {
         return super.onCreateOptionsMenu(menu)
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean = when(item.itemId){
+    override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
         R.id.menu_edit -> {
             val editIntent = Intent(this, EditActivity::class.java)
             editIntent.putExtra("post", post)
@@ -65,7 +71,7 @@ class PostActivity : AppCompatActivity() {
         else -> true
     }
 
-//    //    String을 Bitmap으로 변경 (서버에 저장된 이미지 String을 이미지 뷰에 띄우기 위함)
+    //    //    String을 Bitmap으로 변경 (서버에 저장된 이미지 String을 이미지 뷰에 띄우기 위함)
     fun StringToBitmap(string: String): Bitmap? {
         try {
             val encodeByte = Base64.decode(string, Base64.DEFAULT)
@@ -76,5 +82,29 @@ class PostActivity : AppCompatActivity() {
             Log.e("StringToBitmap", e.message.toString())
             return null;
         }
+    }
+
+    fun BottomNavigate(id: Int) {
+        val tag = id.toString()
+        val fragmentManager = supportFragmentManager
+        val fragmentTransaction = fragmentManager.beginTransaction()
+
+        val currentFragment = fragmentManager.primaryNavigationFragment
+        if (currentFragment != null) {
+            fragmentTransaction.hide(currentFragment)
+        }
+
+        var fragment = fragmentManager.findFragmentByTag(tag)
+        if (fragment == null) {
+            if (id == R.id.menu1) {
+                val intent = Intent(this, MainHomeActivity::class.java)
+                startActivity(intent)
+            }
+            if (id == R.id.menu4) {
+                val intent = Intent(this, CommunityActivity::class.java)
+                startActivity(intent)
+            }
+        }
+
     }
 }

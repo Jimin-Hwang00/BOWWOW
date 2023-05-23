@@ -9,10 +9,13 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
 import com.google.firebase.database.*
+import sklookie.bowwow.MainHomeActivity
 import sklookie.bowwow.R
 import sklookie.bowwow.dto.Post
 
@@ -34,6 +37,10 @@ class CommunityActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_community)
+
+        findViewById<BottomNavigationView>(R.id.btmMenu).setOnNavigationItemReselectedListener { menuItem ->
+            BottomNavigate(menuItem.itemId)
+        }
 
         val writeBtn = findViewById<ExtendedFloatingActionButton>(R.id.write_Btn)
         writeBtn.setOnClickListener {
@@ -66,6 +73,12 @@ class CommunityActivity : AppCompatActivity() {
 
             adapter.notifyDataSetChanged()
         }
+
+    }
+
+    fun init() {
+        val btmBar = findViewById<ConstraintLayout>(R.id.btmMenu)
+
     }
 
     private fun initRecycler() {
@@ -80,7 +93,7 @@ class CommunityActivity : AppCompatActivity() {
         adapter.notifyDataSetChanged()
     }
 
-    val postListener = object: ValueEventListener {
+    val postListener = object : ValueEventListener {
         override fun onDataChange(snapshot: DataSnapshot) {
             try {
                 datas.clear()
@@ -94,8 +107,9 @@ class CommunityActivity : AppCompatActivity() {
                         datas.add(post)
                     }
                 }
-            } catch(e: Exception) {
-                Toast.makeText(this@CommunityActivity, "현재 게시물을 불러올 수 없습니다.", Toast.LENGTH_SHORT).show()
+            } catch (e: Exception) {
+                Toast.makeText(this@CommunityActivity, "현재 게시물을 불러올 수 없습니다.", Toast.LENGTH_SHORT)
+                    .show()
                 Log.e(TAG, "게시글 불러오기 오류: " + e.toString())
             }
 
@@ -111,7 +125,7 @@ class CommunityActivity : AppCompatActivity() {
         }
     }
 
-//    날짜 순으로 게시글 정렬
+    //    날짜 순으로 게시글 정렬
     fun sortingByDate() {
         sortedByView = false
 
@@ -126,7 +140,7 @@ class CommunityActivity : AppCompatActivity() {
         sortByViewsBtn.setBackgroundColor(Color.parseColor("#BDBEC3"))
     }
 
-//    조회수 순으로 게시글 정렬
+    //    조회수 순으로 게시글 정렬
     fun sortingByViews() {
         sortedByView = true
 
@@ -161,5 +175,29 @@ class CommunityActivity : AppCompatActivity() {
         }
 
         super.onResume()
+    }
+
+    fun BottomNavigate(id: Int) {
+        val tag = id.toString()
+        val fragmentManager = supportFragmentManager
+        val fragmentTransaction = fragmentManager.beginTransaction()
+
+        val currentFragment = fragmentManager.primaryNavigationFragment
+        if (currentFragment != null) {
+            fragmentTransaction.hide(currentFragment)
+        }
+
+        var fragment = fragmentManager.findFragmentByTag(tag)
+        if (fragment == null) {
+            if (id == R.id.menu1) {
+                val intent = Intent(this, MainHomeActivity::class.java)
+                startActivity(intent)
+            }
+            if (id == R.id.menu4) {
+                val intent = Intent(this, CommunityActivity::class.java)
+                startActivity(intent)
+            }
+        }
+
     }
 }
