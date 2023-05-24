@@ -2,6 +2,9 @@ package sklookie.bowwow
 
 import android.content.Intent
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
@@ -12,7 +15,7 @@ import sklookie.bowwow.community.CommunityActivity
 import sklookie.bowwow.databinding.MainHomeBinding
 
 class MainHomeActivity : AppCompatActivity() {
-    lateinit var binding : MainHomeBinding
+    private lateinit var binding: MainHomeBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -38,31 +41,26 @@ class MainHomeActivity : AppCompatActivity() {
             }
         })
 
-        binding.btmMenu.setOnNavigationItemReselectedListener {menuItem ->
-            BottomNavigate(menuItem.itemId)
-        }
-    }
-
-    fun BottomNavigate(id : Int) {
-        val tag = id.toString()
-        val fragmentManager = supportFragmentManager
-        val fragmentTransaction = fragmentManager.beginTransaction()
-
-        val currentFragment = fragmentManager.primaryNavigationFragment
-        if (currentFragment != null) {
-            fragmentTransaction.hide(currentFragment)
-        }
-
-        var fragment = fragmentManager.findFragmentByTag(tag)
-        if (fragment == null) {
-            if (id == R.id.menu1) {
-                val intent = Intent(this, MainHomeActivity::class.java)
-                startActivity(intent)
-            }
-            if (id == R.id.menu4) {
-                val intent = Intent(this, CommunityActivity::class.java)
-                startActivity(intent)
+        binding.btmMenu.setOnNavigationItemSelectedListener  { menuItem ->
+            when (menuItem.itemId) {
+                R.id.menu1 -> {
+                    navigateToActivity(MainHomeActivity::class.java)
+                    true
+                }
+                R.id.menu4 -> {
+                    navigateToActivity(CommunityActivity::class.java)
+                    true
+                }
+                else -> false
             }
         }
     }
+
+//    현재 하단바 메뉴 아이템 클릭 시 Activity 전환이 이뤄짐. @TODO 프래그먼트 전환
+    private fun navigateToActivity(activityClass: Class<*>) {
+        val intent = Intent(this, activityClass)
+        finish()
+        startActivity(intent)
+    }
+
 }

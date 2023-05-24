@@ -45,7 +45,17 @@ class EditActivity : AppCompatActivity() {
         setContentView(R.layout.activity_add)
 
         findViewById<BottomNavigationView>(R.id.btmMenu).setOnNavigationItemReselectedListener { menuItem ->
-            BottomNavigate(menuItem.itemId)
+            when (menuItem.itemId) {
+                R.id.menu1 -> {
+                    navigateToActivity(MainHomeActivity::class.java)
+                    true
+                }
+                R.id.menu4 -> {
+                    navigateToActivity(CommunityActivity::class.java)
+                    true
+                }
+                else -> false
+            }
         }
 
         val intent = intent
@@ -179,27 +189,15 @@ class EditActivity : AppCompatActivity() {
         }
     }
 
-    fun BottomNavigate(id: Int) {
-        val tag = id.toString()
-        val fragmentManager = supportFragmentManager
-        val fragmentTransaction = fragmentManager.beginTransaction()
+    private fun navigateToActivity(activityClass: Class<*>) {
+        val intent = Intent(this, activityClass)
+        finish()
+        startActivity(intent)
+    }
 
-        val currentFragment = fragmentManager.primaryNavigationFragment
-        if (currentFragment != null) {
-            fragmentTransaction.hide(currentFragment)
-        }
-
-        var fragment = fragmentManager.findFragmentByTag(tag)
-        if (fragment == null) {
-            if (id == R.id.menu1) {
-                val intent = Intent(this, MainHomeActivity::class.java)
-                startActivity(intent)
-            }
-            if (id == R.id.menu4) {
-                val intent = Intent(this, CommunityActivity::class.java)
-                startActivity(intent)
-            }
-        }
-
+    override fun onResume() {
+        super.onResume()
+        // 현재 선택된 메뉴 아이템 유지
+        findViewById<BottomNavigationView>(R.id.btmMenu).selectedItemId = R.id.menu4
     }
 }

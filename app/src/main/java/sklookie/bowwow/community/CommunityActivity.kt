@@ -39,7 +39,17 @@ class CommunityActivity : AppCompatActivity() {
         setContentView(R.layout.activity_community)
 
         findViewById<BottomNavigationView>(R.id.btmMenu).setOnNavigationItemReselectedListener { menuItem ->
-            BottomNavigate(menuItem.itemId)
+            when (menuItem.itemId) {
+                R.id.menu1 -> {
+                    navigateToActivity(MainHomeActivity::class.java)
+                    true
+                }
+                R.id.menu4 -> {
+                    navigateToActivity(CommunityActivity::class.java)
+                    true
+                }
+                else -> false
+            }
         }
 
         val writeBtn = findViewById<ExtendedFloatingActionButton>(R.id.write_Btn)
@@ -73,11 +83,6 @@ class CommunityActivity : AppCompatActivity() {
 
             adapter.notifyDataSetChanged()
         }
-
-    }
-
-    fun init() {
-        val btmBar = findViewById<ConstraintLayout>(R.id.btmMenu)
 
     }
 
@@ -164,6 +169,8 @@ class CommunityActivity : AppCompatActivity() {
     }
 
     override fun onResume() {
+        findViewById<BottomNavigationView>(R.id.btmMenu).selectedItemId = R.id.menu4
+
         val bundle = getIntent().getBundleExtra("bundle")
 
         if (bundle != null) {                               // bundle에 저장된 정렬 방법 확인
@@ -177,27 +184,9 @@ class CommunityActivity : AppCompatActivity() {
         super.onResume()
     }
 
-    fun BottomNavigate(id: Int) {
-        val tag = id.toString()
-        val fragmentManager = supportFragmentManager
-        val fragmentTransaction = fragmentManager.beginTransaction()
-
-        val currentFragment = fragmentManager.primaryNavigationFragment
-        if (currentFragment != null) {
-            fragmentTransaction.hide(currentFragment)
-        }
-
-        var fragment = fragmentManager.findFragmentByTag(tag)
-        if (fragment == null) {
-            if (id == R.id.menu1) {
-                val intent = Intent(this, MainHomeActivity::class.java)
-                startActivity(intent)
-            }
-            if (id == R.id.menu4) {
-                val intent = Intent(this, CommunityActivity::class.java)
-                startActivity(intent)
-            }
-        }
-
+    private fun navigateToActivity(activityClass: Class<*>) {
+        val intent = Intent(this, activityClass)
+        finish()
+        startActivity(intent)
     }
 }

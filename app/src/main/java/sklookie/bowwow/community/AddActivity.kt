@@ -4,7 +4,11 @@ import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.media.audiofx.BassBoost
+import android.media.audiofx.EnvironmentalReverb
+import android.net.Uri
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Base64
 import android.view.Menu
 import android.view.MenuItem
@@ -20,6 +24,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import com.bumptech.glide.Glide
 import com.google.android.material.bottomnavigation.BottomNavigationView
+import sklookie.bowwow.BuildConfig
 import sklookie.bowwow.MainHomeActivity
 import sklookie.bowwow.R
 import sklookie.bowwow.dao.CommunityDAO
@@ -38,7 +43,17 @@ class AddActivity : AppCompatActivity() {
         setContentView(R.layout.activity_add)
 
         findViewById<BottomNavigationView>(R.id.btmMenu).setOnNavigationItemReselectedListener {menuItem ->
-            BottomNavigate(menuItem.itemId)
+            when (menuItem.itemId) {
+                R.id.menu1 -> {
+                    navigateToActivity(MainHomeActivity::class.java)
+                    true
+                }
+                R.id.menu4 -> {
+                    navigateToActivity(CommunityActivity::class.java)
+                    true
+                }
+                else -> false
+            }
         }
 
         imageView = findViewById<ImageView>(R.id.add_image_view)
@@ -52,6 +67,10 @@ class AddActivity : AppCompatActivity() {
                 when(it.itemId) {
                     R.id.image_edit_change -> {     // 이미지 추가
                         ActivityCompat.requestPermissions(this@AddActivity, arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE), 1)      // 퍼미션 요구 (1회만)
+
+                        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+                            .setData(Uri.parse("package:" + BuildConfig.APPLICATION_ID))
+                        startActivity(intent)
 
                         if (ContextCompat.checkSelfPermission(this@AddActivity.applicationContext, android.Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
                             val intent = Intent(Intent.ACTION_PICK)
@@ -136,26 +155,15 @@ class AddActivity : AppCompatActivity() {
         return Base64.encodeToString(bytes, Base64.NO_WRAP)
     }
 
-    fun BottomNavigate(id : Int) {
-        val tag = id.toString()
-        val fragmentManager = supportFragmentManager
-        val fragmentTransaction = fragmentManager.beginTransaction()
+    private fun navigateToActivity(activityClass: Class<*>) {
+        val intent = Intent(this, activityClass)
+        finish()
+        startActivity(intent)
+    }
 
-        val currentFragment = fragmentManager.primaryNavigationFragment
-        if (currentFragment != null) {
-            fragmentTransaction.hide(currentFragment)
-        }
-
-        var fragment = fragmentManager.findFragmentByTag(tag)
-        if (fragment == null) {
-            if (id == R.id.menu1) {
-                val intent = Intent(this, MainHomeActivity::class.java)
-                startActivity(intent)
-            }
-            if (id == R.id.menu4) {
-                val intent = Intent(this, CommunityActivity::class.java)
-                startActivity(intent)
-            }
-        }
+    override fun onResume() {
+        super.onResume()
+        // 현재 선택된 메뉴 아이템 유지
+        findViewById<BottomNavigationView>(R.id.btmMenu).selectedItemId = R.id.menu4
     }
 }
