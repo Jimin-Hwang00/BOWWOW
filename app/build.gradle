@@ -10,7 +10,7 @@ android {
 
     defaultConfig {
         applicationId "sklookie.bowwow"
-        minSdk 33
+        minSdk 26
         targetSdk 32
         versionCode 1
         versionName "1.0"
@@ -32,9 +32,10 @@ android {
         jvmTarget = '1.8'
     }
     buildFeatures{
-        viewBinding {
-            enabled = true
-        }
+        viewBinding true
+    }
+    viewBinding {
+        enabled = true
     }
 }
 

@@ -1,10 +1,7 @@
 package sklookie.bowwow.dto
 
-import android.os.Parcel
-import android.os.Parcelable
 import com.google.firebase.database.Exclude
 import com.google.firebase.database.IgnoreExtraProperties
-import kotlinx.android.parcel.Parcelize
 import java.io.Serializable
 
 
@@ -16,12 +13,13 @@ data class Post (
     var date: String?,
     var uid: String?,
     var views: String?,
-    var image: String?
+    var image: String?,
+    var comments: List<Comment>?
     ) : Serializable {
 
-    constructor() : this("", "", "", "", "", "0", "")
+    constructor() : this("", "", "", "", "", "0", "", null)
 
-    constructor(title: String, content: String?, date: String?, uid: String?) : this("", title, content, date, uid, "0", "") {
+    constructor(title: String, content: String?, date: String?, uid: String?) : this("", title, content, date, uid, "0", "", null) {
         this.title = title
         this.content = content
         this.date = date

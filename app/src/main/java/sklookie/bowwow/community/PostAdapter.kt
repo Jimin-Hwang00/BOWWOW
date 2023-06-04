@@ -14,13 +14,19 @@ import android.widget.TextView
 import androidx.core.view.isInvisible
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
-import com.bumptech.glide.request.RequestOptions
 import sklookie.bowwow.R
 import sklookie.bowwow.dto.Post
 
 class PostAdapter(private val context: Context) : RecyclerView.Adapter<PostAdapter.ViewHolder>() {
 
-    var datas = mutableListOf<Post>()
+    val TAG = "PostAdapter"
+
+    lateinit var datas: MutableList<Post>
+
+    fun updateDatas(newDatas: MutableList<Post>) {
+        datas = newDatas
+        notifyDataSetChanged()
+    }
 
     override fun getItemCount(): Int {
         return datas.size
@@ -44,6 +50,8 @@ class PostAdapter(private val context: Context) : RecyclerView.Adapter<PostAdapt
         } else {
             imageView.setImageBitmap(null)
 
+            Log.d(TAG, "${data.title} 이미지 : ${data.image}")
+
             val decodedByte = StringToBitmap(data.image!!)
             Glide.with(context)
                 .load(decodedByte)
@@ -55,7 +63,7 @@ class PostAdapter(private val context: Context) : RecyclerView.Adapter<PostAdapt
         holder.itemView.findViewById<TextView>(R.id.item_date_txtView).text = subDate
 
         holder.itemView.setOnClickListener{
-            val post = Post(data.pid, data.title, data.content, data.date, data.uid, data.views, data.image)
+            val post = Post(data.pid, data.title, data.content, data.date, data.uid, data.views, data.image, data.comments)
 
             val intent = Intent(it.context, PostActivity::class.java)
             intent.putExtra("post", post)
@@ -80,7 +88,7 @@ class PostAdapter(private val context: Context) : RecyclerView.Adapter<PostAdapt
         }
     }
 
-//    게시글 검색
+    //    게시글 검색
     fun findPostsByKeyword(keyword: String): List<Post> {
         var result = mutableListOf<Post>()
 

@@ -2,8 +2,6 @@ package sklookie.bowwow.dao
 
 import android.util.Log
 import com.google.firebase.database.*
-import com.google.firebase.firestore.FirebaseFirestore
-import sklookie.bowwow.dto.Post
 import java.time.Instant
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
@@ -31,6 +29,7 @@ class CommunityDAO {
         post.put("image", imageString)
 
         val posted = postId?.let { postDBReference.child(it).setValue(post) }
+        postId?.let { postDBReference.child(it).child("comments") }
         if (posted == null) {
             Log.w(TAG, "게시물 저장에 실패했습니다.");
         }
@@ -70,5 +69,28 @@ class CommunityDAO {
         viewsUpdate.put("views", v++.toString())
 
         postDBReference.child(pid).updateChildren(viewsUpdate)
+    }
+
+    // 댓글 작성 메소드
+    fun addComment(pid: String, comment: String, uid: String) {
+        val commentHashMap = HashMap<String, Any>()
+
+//        val commentId = postDBReference.child(pid).child("comments").push().key
+
+        commentHashMap.put("pid", pid)
+        commentHashMap.put("comment", comment)
+        commentHashMap.put("date", Instant.ofEpochMilli(System.currentTimeMillis())
+                .atOffset(ZoneOffset.ofHours(9))
+                .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")))
+        commentHashMap.put("uid", uid)
+
+        val commented = postDBReference.child(pid).child("comments").push().setValue(commentHashMap)
+        if (commented == null) {
+            Log.w(TAG, "게시물 저장에 실패했습니다.");
+        }
+    }
+
+    fun deleteComment(pid: String, cid: String) {
+        val result = postDBReference.child(pid).child("comments").child(cid).removeValue()
     }
 }

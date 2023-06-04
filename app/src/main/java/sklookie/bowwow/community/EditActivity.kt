@@ -22,16 +22,15 @@ import androidx.core.graphics.drawable.toBitmap
 import com.bumptech.glide.Glide
 import sklookie.bowwow.R
 import sklookie.bowwow.dao.CommunityDAO
+import sklookie.bowwow.databinding.ActivityAddBinding
 import sklookie.bowwow.dto.Post
 import java.io.ByteArrayOutputStream
 
 class EditActivity : AppCompatActivity() {
 
-    lateinit var post: Post
+    private lateinit var binding: ActivityAddBinding
 
-    lateinit var titleEditText: TextView
-    lateinit var contentEditText: TextView
-    lateinit var imageView: ImageView
+    lateinit var post: Post
 
     val dao = CommunityDAO()
 
@@ -40,25 +39,23 @@ class EditActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_add)
+        binding = ActivityAddBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
         val intent = intent
 
         post = intent.getSerializableExtra("post") as Post
 
-        titleEditText = findViewById<TextView>(R.id.title_edit_text)
-        contentEditText = findViewById<TextView>(R.id.content_edit_text)
-        imageView = findViewById<ImageView>(R.id.add_image_view)
 
-        titleEditText.setText(post.title)
-        contentEditText.setText(post.content)
+        binding.titleEditText.setText(post.title)
+        binding.contentEditText.setText(post.content)
 
         if (!post.image.isNullOrBlank()) {
-            imageView.setImageBitmap(StringToBitmap(post.image!!))
+            binding.addImageView.setImageBitmap(StringToBitmap(post.image!!))
             imageString = post.image!!
         }
 
-        imageView.setOnClickListener {
+        binding.addImageView.setOnClickListener {
             val imageMenu = PopupMenu(applicationContext, it)
 
             menuInflater?.inflate(R.menu.menu_edit_image, imageMenu.menu)
@@ -85,7 +82,7 @@ class EditActivity : AppCompatActivity() {
                         } else {
                             imageUrl = ""
                             imageString = ""
-                            imageView.setImageResource(R.mipmap.camera_icon)
+                            binding.addImageView.setImageResource(R.mipmap.camera_icon)
                             Toast.makeText(applicationContext, "이미지가 삭제되었습니다.", Toast.LENGTH_SHORT).show()
                         }
                         true
@@ -106,7 +103,7 @@ class EditActivity : AppCompatActivity() {
 
             Glide.with(this)
                 .load(imageUrl)
-                .into(imageView)
+                .into(binding.addImageView)
         }
     }
 
@@ -117,11 +114,11 @@ class EditActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean = when(item.itemId){
         R.id.menu_add_save -> {
-            val title = titleEditText.text.toString()
-            val content = contentEditText.text.toString()
+            val title = binding.titleEditText.text.toString()
+            val content = binding.contentEditText.text.toString()
 
             if (!imageUrl.isNullOrBlank()) {
-                imageString = bitmapToString(imageView.drawable.toBitmap())
+                imageString = bitmapToString(binding.addImageView.drawable.toBitmap())
             }
 
             dao.editPost(post.pid.toString(), title, content, imageString)       // 수정 메소드 실행.

@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.os.Bundle
 import android.util.Base64
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.ImageView
@@ -21,9 +22,13 @@ import androidx.core.graphics.drawable.toBitmap
 import com.bumptech.glide.Glide
 import sklookie.bowwow.R
 import sklookie.bowwow.dao.CommunityDAO
+import sklookie.bowwow.databinding.ActivityAddBinding
 import java.io.ByteArrayOutputStream
 
 class AddActivity : AppCompatActivity() {
+    val TAG = "AddActivity"
+
+    private lateinit var binding: ActivityAddBinding
     val dao = CommunityDAO()
 
     lateinit var imageView: ImageView
@@ -33,11 +38,10 @@ class AddActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_add)
+        binding = ActivityAddBinding.inflate(layoutInflater)
+        setContentView(binding.root)
 
-        imageView = findViewById<ImageView>(R.id.add_image_view)
-
-        imageView.setOnClickListener {
+        binding.addImageView.setOnClickListener {
             val imageMenu = PopupMenu(applicationContext, it)
 
 //            이미지 누를 시 메뉴 생성
@@ -98,19 +102,19 @@ class AddActivity : AppCompatActivity() {
     //intent 활용한 이벤트 처리
     override fun onOptionsItemSelected(item: MenuItem): Boolean = when(item.itemId){
         R.id.menu_add_save -> {
-            val title = findViewById<TextView>(R.id.title_edit_text)
-            val content = findViewById<TextView>(R.id.content_edit_text)
-
             if (!imageUrl.isNullOrBlank()) {
+                Log.d(TAG, "imageUrl : ${imageUrl}")
                 imageString = bitmapToString(imageView.drawable.toBitmap())
+            } else {
+                Log.d(TAG, "imageUrl : 없음")
             }
 
-            intent.putExtra("title", title.text.toString())
-            intent.putExtra("content", content.text.toString())
+            intent.putExtra("title", binding.titleEditText.text.toString())
+            intent.putExtra("content", binding.contentEditText.text.toString())
 
             setResult(Activity.RESULT_OK, intent)
 
-            dao.addPost(title.text.toString(), content.text.toString(), imageString)
+            dao.addPost(binding.titleEditText.text.toString(), binding.contentEditText.text.toString(), imageString)
 
             finish()
 
