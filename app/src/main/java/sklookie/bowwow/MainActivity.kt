@@ -1,6 +1,7 @@
 package sklookie.bowwow
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.usage.UsageEvents
 import android.bluetooth.BluetoothAdapter
 import android.bluetooth.BluetoothDevice
@@ -8,8 +9,10 @@ import android.bluetooth.BluetoothManager
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -20,27 +23,25 @@ import sklookie.bowwow.databinding.ActivityMainBinding
 import java.util.UUID
 
 
-//권한추가
+//권한추가(안드12이상..권한 3개 더 추가)
 const val REQUEST_ALL_PERMISSION = 1
 val PERMISSIONS = arrayOf(
-    Manifest.permission.ACCESS_FINE_LOCATION
+    Manifest.permission.BLUETOOTH,
+    Manifest.permission.BLUETOOTH_SCAN,
+    Manifest.permission.BLUETOOTH_ADVERTISE,
+    Manifest.permission.BLUETOOTH_CONNECT
 )
 class MainActivity : AppCompatActivity() {
-    lateinit var binding : ActivityMainBinding
+    lateinit var binding: ActivityMainBinding
     private val bluetoothManager: BluetoothManager by lazy {
         getSystemService(BluetoothManager::class.java)
     }
     private val mBluetoothAdapter: BluetoothAdapter? by lazy {
         bluetoothManager.adapter
     }
-    var connected: MutableLiveData<Boolean?> = MutableLiveData(null)
-    var progressState: MutableLiveData<String> = MutableLiveData("")
-    var foundDevice:Boolean = false
-    var targetDevice: BluetoothDevice? = null
-    val inProgress = MutableLiveData<UsageEvents.Event>()
     var myDevices = mutableMapOf<String?, String?>()
-    var devices = mutableMapOf<String?, String?>()
-    private val myUUID : UUID = UUID.randomUUID()
+    var serchDevices = mutableMapOf<String?, String?>()
+
     //장치 검색 때 필요한 변수
     private lateinit var broadcastReceiver: BroadcastReceiver
 
@@ -50,47 +51,16 @@ class MainActivity : AppCompatActivity() {
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        //기기 검색
-        broadcastReceiver = object : BroadcastReceiver(){
-            override fun onReceive(p0: Context?, p1: Intent?) {
-                when(intent?.action){
-                    BluetoothDevice.ACTION_FOUND -> {
-                        val device = intent.getParcelableExtra<BluetoothDevice>(BluetoothDevice.EXTRA_DEVICE)
-                        if (ActivityCompat.checkSelfPermission(
-                                this@MainActivity,
-                                Manifest.permission.BLUETOOTH_CONNECT
-                            ) != PackageManager.PERMISSION_GRANTED
-                        ) {
-                            return
-                        }
-                        val deviceName = device?.name
-                        val addr = device?.address
-                        val deviceHardwareAddress = device?.address
-                        if (deviceName != null && deviceHardwareAddress != null) {
-                            devices.put(deviceName, deviceHardwareAddress)
-                        }
-                    }
-                }
-            }
-        }
-
-
-        //검색된 장치 정보 테스트
-        Toast.makeText(
-            this@MainActivity, "${devices.keys}장치 저장", Toast.LENGTH_SHORT
-        ).show()
-
-
-        //블루투스 권한 묻기
-        if (!hasPermissions(this, PERMISSIONS)) {
-            requestPermissions(PERMISSIONS, REQUEST_ALL_PERMISSION)
-        }
-
         val devices = bluetoothDao().devices
         val adapter = DeviceAdapter(devices)
 
         val layoutManager = LinearLayoutManager(this)
         layoutManager.orientation = LinearLayoutManager.VERTICAL
+
+        //블루투스 권한 묻기
+        if (!hasPermissions(this, PERMISSIONS)) {
+            requestPermissions(PERMISSIONS, REQUEST_ALL_PERMISSION)
+        }
 
         binding.recyclerView.layoutManager = layoutManager
         binding.recyclerView.adapter = adapter
@@ -98,18 +68,21 @@ class MainActivity : AppCompatActivity() {
         //원하는 장치 클릭시, 연결 시작
         val listener = object : DeviceAdapter.OnItemClickListener {
             override fun onItemClick(view: View, position: Int) {
-                if(devices[position].isConnect.equals("연결됨")){
+                if (devices[position].isConnect.equals("연결됨")) {
                     devices[position].isConnect = "연결안됨"
 
                     Toast.makeText(
-                        this@MainActivity, "${devices[position].deviceName}연결 취소", Toast.LENGTH_SHORT
+                        this@MainActivity,
+                        "${devices[position].deviceName}연결 취소",
+                        Toast.LENGTH_SHORT
                     ).show()
-                }
-                else{
+                } else {
                     devices[position].isConnect = "연결됨"
 
                     Toast.makeText(
-                        this@MainActivity, "${devices[position].deviceName}연결 완료", Toast.LENGTH_SHORT
+                        this@MainActivity,
+                        "${devices[position].deviceName}연결 완료",
+                        Toast.LENGTH_SHORT
                     ).show()
                 }
 
@@ -119,16 +92,93 @@ class MainActivity : AppCompatActivity() {
         adapter.setOnItemClickListener(listener)
 
         //내 장치 정보 버튼 클릭
-        binding.bellConnect.setOnClickListener{
+        binding.bellConnect.setOnClickListener {
             getPairedDevices()
         }
 
-        if (ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.BLUETOOTH_SCAN
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            return
+        //기기 검색 저장
+        broadcastReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) {
+                when (intent.action) {
+                    //찾은 기기가 있으면, bluetoothDao에 저장, broadcastReceiver에 기기 저장
+                    BluetoothDevice.ACTION_FOUND -> {
+                        val device =
+                            intent.getParcelableExtra<BluetoothDevice>(BluetoothDevice.EXTRA_DEVICE)
+
+
+                        //임시방편 : device?.name으로 가져와야하는데.. permission 오류 발생
+                        val deviceName = "블루투스 장치"
+                        val deviceHardwareAddress = device?.address
+                        if (deviceName != null && deviceHardwareAddress != null) {
+                            devices.add(bluetoothDto(deviceName, deviceHardwareAddress, "연결안됨"))
+                        }
+                    }
+                    else -> Toast.makeText(
+                        this@MainActivity,
+                        "블루투스 기기가 없습니다.",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        }
+        // BroadcastReceiver 등록
+        var filter: IntentFilter = IntentFilter(BluetoothDevice.ACTION_FOUND);
+        registerReceiver(broadcastReceiver, filter)
+
+        adapter.notifyDataSetChanged()
+        //검색된 장치 정보 테스트
+//        Toast.makeText(
+//            this@MainActivity, devices.toString(), Toast.LENGTH_SHORT
+//        ).show()
+    }
+
+    //기기 검색 후, 해제 필수
+    override fun onDestroy() {
+        super.onDestroy()
+        // BroadcastReceiver 등록해제
+        unregisterReceiver(broadcastReceiver)
+    }
+
+    // (06.04) 아두이노 디바이스에 연결
+    private fun connectDevice(deviceAddress: String) {
+        mBluetoothAdapter?.let { adapter ->
+            // 기기 검색을 수행중이라면 취소
+            if (ActivityCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.BLUETOOTH_SCAN
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return
+            }
+            if (adapter.isDiscovering) {
+                adapter.cancelDiscovery()
+            }
+
+            // 서버의 역할을 수행 할 Device 획득
+            val device = adapter.getRemoteDevice(deviceAddress)
+            // UUID 선언
+            val myUUID: UUID = UUID.randomUUID()
+            try {
+                val thread = ConnectThread(myUUID, device)
+
+                thread.run()
+                Toast.makeText(
+                    this@MainActivity, "${device.name}과 연결되었습니다." +
+                            " 기기를 확인해주세요.", Toast.LENGTH_SHORT
+                ).show()
+            } catch (e: Exception) { // 연결에 실패할 경우 호출됨
+                Toast.makeText(
+                    this@MainActivity, "기기의 전원이 꺼져 있습니다." +
+                            " 기기를 확인해주세요.", Toast.LENGTH_SHORT
+                ).show()
+            }
         }
     }
 
@@ -166,6 +216,42 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    //기기 검색
+    private fun deviceDiscovering(){
+        mBluetoothAdapter?.let {
+            if (it.isEnabled) {
+                // 현재 검색중이라면
+                if (it.isDiscovering) {
+                    // 검색 취소
+                    if (ActivityCompat.checkSelfPermission(
+                            this,
+                            Manifest.permission.BLUETOOTH_SCAN
+                        ) != PackageManager.PERMISSION_GRANTED
+                    ) {
+                        // TODO: Consider calling
+                        //    ActivityCompat#requestPermissions
+                        // here to request the missing permissions, and then overriding
+                        //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                        //                                          int[] grantResults)
+                        // to handle the case where the user grants the permission. See the documentation
+                        // for ActivityCompat#requestPermissions for more details.
+                        return
+                    }
+                    it.cancelDiscovery()
+                    Toast.makeText(this, "기기검색이 중단되었습니다.", Toast.LENGTH_SHORT).show()
+                    return
+                }
+                // ArrayAdapter clear
+//                    devices.clear()
+                // 검색시작
+                it.startDiscovery()
+                Toast.makeText(this, "기기 검색을 시작하였습니다", Toast.LENGTH_SHORT).show()
+            } else {
+                Toast.makeText(this, "블루투스가 비활성화되어 있습니다", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
 
     //권한추가1
     private fun hasPermissions(context: Context?, permissions: Array<String>): Boolean {
@@ -191,6 +277,7 @@ class MainActivity : AppCompatActivity() {
                 // If request is cancelled, the result arrays are empty.
                 if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     Toast.makeText(this, "블루투스가 켜졌습니다!", Toast.LENGTH_SHORT).show()
+                    deviceDiscovering()
                 } else {
                     requestPermissions(permissions, REQUEST_ALL_PERMISSION)
                     Toast.makeText(this, "블루투스를 켜주세요!", Toast.LENGTH_SHORT).show()
@@ -198,4 +285,5 @@ class MainActivity : AppCompatActivity() {
             }
         }
     }
+
 }

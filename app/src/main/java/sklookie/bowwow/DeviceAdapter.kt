@@ -22,6 +22,7 @@ class DeviceAdapter(val devices: ArrayList<bluetoothDto>) : RecyclerView.Adapter
 
     class   DeviceViewHolder(val itemBinding: ActivityItemBinding, listener: OnItemClickListener) : RecyclerView.ViewHolder(itemBinding.root){
         val deviceName = itemBinding.deviceName
+        val mac = itemBinding.Mac
         val isConnect = itemBinding.isConnect
 
         init{
@@ -46,6 +47,7 @@ class DeviceAdapter(val devices: ArrayList<bluetoothDto>) : RecyclerView.Adapter
 
     override fun onBindViewHolder(holder: DeviceViewHolder, position: Int) {
         holder.deviceName.text = devices[position].deviceName
+        holder.mac.text = devices[position].deviceAddress
         holder.isConnect.text = devices[position].isConnect
     }
 }
