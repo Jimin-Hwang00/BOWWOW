@@ -68,7 +68,7 @@ class AddActivity : AppCompatActivity() {
                             Toast.makeText(applicationContext, "선택된 이미지가 없습니다.", Toast.LENGTH_SHORT).show()
                         } else {                               // 이미지 삭제
                             imageUrl = ""
-                            imageView.setImageResource(R.mipmap.camera_icon)
+                            binding.addImageView.setImageResource(R.mipmap.camera_icon)
                             Toast.makeText(applicationContext, "이미지가 삭제되었습니다.", Toast.LENGTH_SHORT).show()
                         }
                         true
@@ -89,35 +89,42 @@ class AddActivity : AppCompatActivity() {
 
             Glide.with(this)
                 .load(imageUrl)
-                .into(imageView)
+                .into(binding.addImageView)
         }
     }
 
-    //선택된 메뉴 처리하기
+//    옵션 메뉴 추가
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.menu_add_post, menu)
         return super.onCreateOptionsMenu(menu)
     }
 
-    //intent 활용한 이벤트 처리
-    override fun onOptionsItemSelected(item: MenuItem): Boolean = when(item.itemId){
+//    옵션 메뉴 - 게시글 저장 기능
+    override fun onOptionsItemSelected(item: MenuItem): Boolean = when(item.itemId) {
         R.id.menu_add_save -> {
-            if (!imageUrl.isNullOrBlank()) {
-                Log.d(TAG, "imageUrl : ${imageUrl}")
-                imageString = bitmapToString(imageView.drawable.toBitmap())
+            if (binding.titleEditText.text.isNullOrEmpty()) {       // 제목이 입력되지 않았을 경우 Toast 띄움
+                Toast.makeText(AddActivity@ this, "제목을 입력하세요.", Toast.LENGTH_SHORT).show()
             } else {
-                Log.d(TAG, "imageUrl : 없음")
+                if (!imageUrl.isNullOrBlank()) {                    // 선택된 이미지가 있는 경우
+                    Log.d(TAG, "imageUrl : ${imageUrl}")
+                    imageString = bitmapToString(binding.addImageView.drawable.toBitmap())
+                } else {                                            // 선택된 이미지가 없는 경우
+                    Log.d(TAG, "imageUrl : 없음")
+                }
+
+                intent.putExtra("title", binding.titleEditText.text.toString())
+                intent.putExtra("content", binding.contentEditText.text.toString())
+
+                setResult(Activity.RESULT_OK, intent)
+
+                dao.addPost(
+                    binding.titleEditText.text.toString(),
+                    binding.contentEditText.text.toString(),
+                    imageString
+                )
+
+                finish()
             }
-
-            intent.putExtra("title", binding.titleEditText.text.toString())
-            intent.putExtra("content", binding.contentEditText.text.toString())
-
-            setResult(Activity.RESULT_OK, intent)
-
-            dao.addPost(binding.titleEditText.text.toString(), binding.contentEditText.text.toString(), imageString)
-
-            finish()
-
             true
         }
         else -> true

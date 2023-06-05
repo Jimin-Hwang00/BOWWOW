@@ -26,9 +26,6 @@ class CommunityActivity : AppCompatActivity() {
     val db: FirebaseDatabase = FirebaseDatabase.getInstance()
     val dbReference: DatabaseReference = db.getReference("post")
 
-    lateinit var sortByDateBtn: Button
-    lateinit var sortByViewsBtn: Button
-
     var sortedByView: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -41,7 +38,7 @@ class CommunityActivity : AppCompatActivity() {
             startActivity(writeIntent)
         }
 
-        // 리사이클러뷰 adapter 연결
+//        리사이클러뷰 adapter 연결
         initRecycler()
 
         dbReference.addValueEventListener(postListener)
@@ -138,8 +135,8 @@ class CommunityActivity : AppCompatActivity() {
         mainRecyclerView.layoutManager?.removeAllViews()
         adapter.notifyDataSetChanged()
 
-        sortByDateBtn.setBackgroundColor(Color.parseColor("#2196F3"))
-        sortByViewsBtn.setBackgroundColor(Color.parseColor("#BDBEC3"))
+        binding.sortByDateBtn.setBackgroundColor(Color.parseColor("#2196F3"))
+        binding.sortByViewBtn.setBackgroundColor(Color.parseColor("#BDBEC3"))
     }
 
 //    조회수 순으로 게시글 정렬
@@ -153,8 +150,8 @@ class CommunityActivity : AppCompatActivity() {
         mainRecyclerView.layoutManager?.removeAllViews()
         adapter.notifyDataSetChanged()
 
-        sortByDateBtn.setBackgroundColor(Color.parseColor("#BDBEC3"))
-        sortByViewsBtn.setBackgroundColor(Color.parseColor("#2196F3"))
+        binding.sortByDateBtn.setBackgroundColor(Color.parseColor("#BDBEC3"))
+        binding.sortByViewBtn.setBackgroundColor(Color.parseColor("#2196F3"))
     }
 
     override fun onStop() {

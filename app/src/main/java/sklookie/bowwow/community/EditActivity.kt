@@ -4,6 +4,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.os.AsyncTask
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Base64
@@ -20,22 +21,30 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import com.bumptech.glide.Glide
+import com.google.android.gms.tasks.Tasks
+import com.google.firebase.database.*
 import sklookie.bowwow.R
 import sklookie.bowwow.dao.CommunityDAO
 import sklookie.bowwow.databinding.ActivityAddBinding
+import sklookie.bowwow.dto.Comment
 import sklookie.bowwow.dto.Post
 import java.io.ByteArrayOutputStream
 
 class EditActivity : AppCompatActivity() {
+    val TAG = "EditActivity"
 
     private lateinit var binding: ActivityAddBinding
 
-    lateinit var post: Post
+    var post: Post? = Post()
+    lateinit var intentPid: String
 
     val dao = CommunityDAO()
 
     var imageUrl: String = ""
     var imageString: String = ""
+
+    val db: FirebaseDatabase = FirebaseDatabase.getInstance()
+    lateinit var postReference: DatabaseReference
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -43,17 +52,47 @@ class EditActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         val intent = intent
+        intentPid = intent.getStringExtra("pid").toString()
 
-        post = intent.getSerializableExtra("post") as Post
+        Log.d(TAG, "intentPid : ${intentPid}")
 
+        val asyncTask = object : AsyncTask<String, Void, Post?>() {
+            override fun doInBackground(vararg p0: String?): Post? {
+                postReference = db.getReference("post/${intentPid}")
 
-        binding.titleEditText.setText(post.title)
-        binding.contentEditText.setText(post.content)
+                val result: Post? = Post()
+                val titleTask = postReference.child("title").get()
+                val imageTask = postReference.child("image").get()
+                val contentTask = postReference.child("content").get()
 
-        if (!post.image.isNullOrBlank()) {
-            binding.addImageView.setImageBitmap(StringToBitmap(post.image!!))
-            imageString = post.image!!
+                try {
+                    result?.pid = intentPid
+
+                    val titleSnapshot = Tasks.await(titleTask)
+                    result?.title = titleSnapshot.value.toString()
+
+                    val imageSnapshot = Tasks.await(imageTask)
+                    result?.image = imageSnapshot.value.toString()
+
+                    val contentSnapshot = Tasks.await(contentTask)
+                    result?.content = contentSnapshot.value.toString()
+
+                    return result
+                } catch (e: Exception) {
+                    Log.e(TAG, "데이터 가져오기 오류: ${e.message}")
+                    return null
+                }
+            }
+
+            override fun onPostExecute(result: Post?) {
+                super.onPostExecute(result)
+                post = result
+
+                setView()
+            }
         }
+
+        asyncTask.execute(intentPid)
 
         binding.addImageView.setOnClickListener {
             val imageMenu = PopupMenu(applicationContext, it)
@@ -121,7 +160,7 @@ class EditActivity : AppCompatActivity() {
                 imageString = bitmapToString(binding.addImageView.drawable.toBitmap())
             }
 
-            dao.editPost(post.pid.toString(), title, content, imageString)       // 수정 메소드 실행.
+            dao.editPost(post?.pid.toString(), title, content, imageString)       // 수정 메소드 실행.
 
             finish()
 
@@ -152,6 +191,17 @@ class EditActivity : AppCompatActivity() {
         } catch (e: java.lang.Exception) {
             Log.e("StringToBitmap", e.message.toString())
             return null;
+        }
+    }
+
+//    화면 view 설정
+    fun setView() {
+        binding.titleEditText.setText(post?.title)
+        binding.contentEditText.setText(post?.content)
+
+        if (!post?.image.isNullOrBlank()) {
+            binding.addImageView.setImageBitmap(StringToBitmap(post?.image!!))
+            imageString = post?.image!!
         }
     }
 }

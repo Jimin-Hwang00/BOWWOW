@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.os.AsyncTask
 import android.util.Base64
 import android.util.Log
 import android.view.LayoutInflater
@@ -15,6 +16,7 @@ import androidx.core.view.isInvisible
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import sklookie.bowwow.R
+import sklookie.bowwow.dao.CommunityDAO
 import sklookie.bowwow.dto.Post
 
 class PostAdapter(private val context: Context) : RecyclerView.Adapter<PostAdapter.ViewHolder>() {
@@ -50,8 +52,6 @@ class PostAdapter(private val context: Context) : RecyclerView.Adapter<PostAdapt
         } else {
             imageView.setImageBitmap(null)
 
-            Log.d(TAG, "${data.title} 이미지 : ${data.image}")
-
             val decodedByte = StringToBitmap(data.image!!)
             Glide.with(context)
                 .load(decodedByte)
@@ -62,11 +62,9 @@ class PostAdapter(private val context: Context) : RecyclerView.Adapter<PostAdapt
         val subDate = date?.substring(0 until 11)
         holder.itemView.findViewById<TextView>(R.id.item_date_txtView).text = subDate
 
-        holder.itemView.setOnClickListener{
-            val post = Post(data.pid, data.title, data.content, data.date, data.uid, data.views, data.image, data.comments)
-
+        holder.itemView.setOnClickListener {
             val intent = Intent(it.context, PostActivity::class.java)
-            intent.putExtra("post", post)
+            intent.putExtra("pid", data.pid)        // pid 값만 넘김 (PostActivity에서 해당 pid로 게시글 상세 내용 읽어옴)
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             context.startActivity(intent)
         }

@@ -37,7 +37,7 @@
             android:parentActivityName=".MainActivity" />
         <activity
             android:name=".community.EditActivity"
-            android:parentActivityName=".community.PostActivity" />
+            android:parentActivityName=".community.CommunityActivity" />
         <activity
             android:name=".community.PostActivity"
             android:parentActivityName=".community.CommunityActivity" />

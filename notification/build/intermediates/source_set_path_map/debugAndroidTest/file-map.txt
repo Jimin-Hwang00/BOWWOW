@@ -1,9 +1,0 @@
-sklookie.bowwow.notification.test.notification-core-1.5.0-0 /Users/hwangjimin/.gradle/caches/transforms-3/3be9fbd2504f0d58fdb6d1538a172410/transformed/core-1.5.0/res
-sklookie.bowwow.notification.test.notification-annotation-experimental-1.3.0-1 /Users/hwangjimin/.gradle/caches/transforms-3/c3ccb551a96d7464cbc7a567310b2d43/transformed/annotation-experimental-1.3.0/res
-sklookie.bowwow.notification.test.notification-androidTest-2 /Users/hwangjimin/Documents/BW/bowwow/notification/build/generated/res/resValues/androidTest/debug
-sklookie.bowwow.notification.test.notification-androidTest-3 /Users/hwangjimin/Documents/BW/bowwow/notification/build/generated/res/rs/androidTest/debug
-sklookie.bowwow.notification.test.notification-mergeDebugAndroidTestResources-4 /Users/hwangjimin/Documents/BW/bowwow/notification/build/intermediates/incremental/debugAndroidTest/mergeDebugAndroidTestResources/merged.dir
-sklookie.bowwow.notification.test.notification-mergeDebugAndroidTestResources-5 /Users/hwangjimin/Documents/BW/bowwow/notification/build/intermediates/incremental/debugAndroidTest/mergeDebugAndroidTestResources/stripped.dir
-sklookie.bowwow.notification.test.notification-merged_res-6 /Users/hwangjimin/Documents/BW/bowwow/notification/build/intermediates/merged_res/debugAndroidTest
-sklookie.bowwow.notification.test.notification-androidTest-7 /Users/hwangjimin/Documents/BW/bowwow/notification/src/androidTest/res
-sklookie.bowwow.notification.test.notification-androidTestDebug-8 /Users/hwangjimin/Documents/BW/bowwow/notification/src/androidTestDebug/res
