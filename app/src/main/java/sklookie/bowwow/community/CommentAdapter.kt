@@ -12,7 +12,7 @@ import sklookie.bowwow.R
 import sklookie.bowwow.dao.CommunityDAO
 import sklookie.bowwow.dto.Comment
 
-class CommentAdapter(private val context: Context) : RecyclerView.Adapter<CommentAdapter.ViewHolder>() {
+class CommentAdapter(private val context: Context, private val commentDeletedListener: CommentDeletedListener) : RecyclerView.Adapter<CommentAdapter.ViewHolder>() {
 
     var datas = mutableListOf<Comment>()
     val dao = CommunityDAO()
@@ -30,6 +30,10 @@ class CommentAdapter(private val context: Context) : RecyclerView.Adapter<Commen
         return ViewHolder(view)
     }
 
+    interface CommentDeletedListener {
+        fun onCommentDeleted()
+    }
+
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val data = datas[position]
 
@@ -39,7 +43,11 @@ class CommentAdapter(private val context: Context) : RecyclerView.Adapter<Commen
 //        삭제 이미지 클릭 이벤트 설정
         holder.itemView.findViewById<ImageView>(R.id.comment_delete_image).setOnClickListener {
             Log.d("CommentAdapter", "comment delete click -> pid : ${data.pid}, cid : ${data.cid}")
-            dao.deleteComment(data.pid!!, data.cid!!)   // 데이터베이스에 삭제 반영
+            dao.deleteComment(data.pid!!, data.cid!!, object : CommunityDAO.DeleteCommentCallback {
+                override fun onDeleteCommentComplete() {
+                    commentDeletedListener.onCommentDeleted()
+                }
+            })   // 데이터베이스에 삭제 반영
             datas.removeAt(position)                    // 어댑터 데이터에 삭제 반영
             notifyDataSetChanged()
         }

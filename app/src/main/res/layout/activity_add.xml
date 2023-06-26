@@ -26,7 +26,7 @@
         android:layout_width="333dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="18dp"
-        android:layout_marginTop="380dp"
+        android:layout_marginTop="150dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
@@ -34,6 +34,24 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <Button
+                    android:id="@+id/add_image_btn"
+                    android:layout_width="110dp"
+                    android:layout_height="50dp"
+                    android:text="이미지 추가"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintTop_toTopOf="parent" />
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/add_image_recycler"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
 
             <EditText
                 android:id="@+id/content_edit_text"
@@ -46,16 +64,6 @@
                 android:padding="10dp" />
         </LinearLayout>
     </ScrollView>
-
-    <ImageView
-        android:id="@+id/add_image_view"
-        android:layout_width="199dp"
-        android:layout_height="243dp"
-        android:layout_marginStart="80dp"
-        android:layout_marginTop="104dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@mipmap/camera_icon" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

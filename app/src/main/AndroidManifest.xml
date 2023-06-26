@@ -31,16 +31,19 @@
         </activity>
         <activity
             android:name=".community.AddActivity"
-            android:parentActivityName=".community.CommunityActivity" />
+            android:parentActivityName=".community.CommunityActivity"
+            android:windowSoftInputMode="adjustPan"/>
         <activity
             android:name=".community.CommunityActivity"
             android:parentActivityName=".MainActivity" />
         <activity
             android:name=".community.EditActivity"
-            android:parentActivityName=".community.CommunityActivity" />
+            android:parentActivityName=".community.CommunityActivity"
+            android:windowSoftInputMode="adjustPan"/>
         <activity
             android:name=".community.PostActivity"
-            android:parentActivityName=".community.CommunityActivity" />
+            android:parentActivityName=".community.CommunityActivity"
+            android:windowSoftInputMode="adjustPan"/>
     </application>
 
 </manifest>

@@ -1,25 +1,22 @@
 package sklookie.bowwow.community
 
-import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.net.Uri
 import android.os.Bundle
+import android.provider.MediaStore
 import android.util.Base64
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.ImageView
-import android.widget.PopupMenu
-import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.graphics.drawable.toBitmap
-import com.bumptech.glide.Glide
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import sklookie.bowwow.R
 import sklookie.bowwow.dao.CommunityDAO
 import sklookie.bowwow.databinding.ActivityAddBinding
@@ -36,61 +33,41 @@ class AddActivity : AppCompatActivity() {
     var imageUrl: String? = ""
     var imageString: String = ""
 
+    var imageUris = mutableListOf<Uri>()
+    var imageStrings = mutableListOf<String>()
+
+    lateinit var imageAdapter: MultiImageAdapter
+    lateinit var imageRecyclerView: RecyclerView
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityAddBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.addImageView.setOnClickListener {
-            val imageMenu = PopupMenu(applicationContext, it)
+        initImageRecycler()
 
-//            이미지 누를 시 메뉴 생성
-            menuInflater?.inflate(R.menu.menu_add_image, imageMenu.menu)
-            imageMenu.show()
-            imageMenu.setOnMenuItemClickListener {
-                when(it.itemId) {
-                    R.id.image_edit_change -> {     // 이미지 추가
-                        ActivityCompat.requestPermissions(this@AddActivity, arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE), 1)      // 퍼미션 요구 (1회만)
-
-                        if (ContextCompat.checkSelfPermission(this@AddActivity.applicationContext, android.Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                            val intent = Intent(Intent.ACTION_PICK)
-                            intent.type = "image/*"
-
-                            activityResult.launch(intent)
-                        } else {
-                            Toast.makeText(this@AddActivity, "갤러리 접근 권한이 거부돼 있습니다. 설정에서 접근을 허용해 주세요.", Toast.LENGTH_SHORT).show()
-                        }
-
-                        true
-                    }
-                    R.id.image_edit_delete -> {
-                        if (imageUrl.equals("")) {      // 선택된 이미지가 없는 상태에서 이미지 삭제 버튼 누름
-                            Toast.makeText(applicationContext, "선택된 이미지가 없습니다.", Toast.LENGTH_SHORT).show()
-                        } else {                               // 이미지 삭제
-                            imageUrl = ""
-                            binding.addImageView.setImageResource(R.mipmap.camera_icon)
-                            Toast.makeText(applicationContext, "이미지가 삭제되었습니다.", Toast.LENGTH_SHORT).show()
-                        }
-                        true
-                    }
-                    else -> {
-                        true
-                    }
-                }
+        imageAdapter.setOnItemDeleteListener(object: MultiImageAdapter.OnImageDeleteListener {
+            override fun onImageDeleted(position: Int) {
+                imageUris = imageAdapter.datas
             }
-        }
-    }
+        })
 
-//    이미지 선택 완료 시 Glide를 이용하여 이미지 띄우기
-    val activityResult: ActivityResultLauncher<Intent> = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()) {
-        if (it.resultCode == RESULT_OK && it.data != null) {
-            imageUrl = it.data!!.data.toString()
+        binding.addImageBtn.setOnClickListener {
+            ActivityCompat.requestPermissions(this@AddActivity, arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE), 1)      // 퍼미션 요구 (1회만)
 
-            Glide.with(this)
-                .load(imageUrl)
-                .into(binding.addImageView)
+            if (ContextCompat.checkSelfPermission(this@AddActivity.applicationContext, android.Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                val intent = Intent(Intent.ACTION_PICK)
+                intent.setType(MediaStore.Images.Media.CONTENT_TYPE)
+                intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+                intent.setData(MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+                startActivityForResult(intent, 2222)
+            } else {
+                Toast.makeText(this@AddActivity, "갤러리 접근 권한이 거부돼 있습니다. 설정에서 접근을 허용해 주세요.", Toast.LENGTH_SHORT).show()
+            }
+
         }
+
     }
 
 //    옵션 메뉴 추가
@@ -105,25 +82,28 @@ class AddActivity : AppCompatActivity() {
             if (binding.titleEditText.text.isNullOrEmpty()) {       // 제목이 입력되지 않았을 경우 Toast 띄움
                 Toast.makeText(AddActivity@ this, "제목을 입력하세요.", Toast.LENGTH_SHORT).show()
             } else {
-                if (!imageUrl.isNullOrBlank()) {                    // 선택된 이미지가 있는 경우
-                    Log.d(TAG, "imageUrl : ${imageUrl}")
-                    imageString = bitmapToString(binding.addImageView.drawable.toBitmap())
-                } else {                                            // 선택된 이미지가 없는 경우
-                    Log.d(TAG, "imageUrl : 없음")
+
+                if (!imageUris.isNullOrEmpty()) {
+                    for (imageUri in imageUris) {
+                        imageStrings.add(bitmapToString(MediaStore.Images.Media.getBitmap(contentResolver, imageUri)))
+                    }
                 }
 
-                intent.putExtra("title", binding.titleEditText.text.toString())
-                intent.putExtra("content", binding.contentEditText.text.toString())
-
-                setResult(Activity.RESULT_OK, intent)
+                for (i in 0 until  imageStrings.size) {
+                    Log.d(TAG, "imageStrings: ${imageStrings.get(i)}")
+                }
 
                 dao.addPost(
                     binding.titleEditText.text.toString(),
                     binding.contentEditText.text.toString(),
-                    imageString
-                )
+                    imageUris,
+                    object: CommunityDAO.AddPostCallback {
+                        override fun onAddPostCompleted() {
+                            finish()
+                        }
 
-                finish()
+                    }
+                )
             }
             true
         }
@@ -140,5 +120,53 @@ class AddActivity : AppCompatActivity() {
         val bytes = stream.toByteArray()
 
         return Base64.encodeToString(bytes, Base64.NO_WRAP)
+    }
+
+    fun initImageRecycler() {
+        imageAdapter = MultiImageAdapter(this)
+        imageRecyclerView = binding.addImageRecycler
+
+        imageRecyclerView.layoutManager = LinearLayoutManager(this, RecyclerView.HORIZONTAL, false)
+        imageRecyclerView.adapter = imageAdapter
+
+        imageAdapter.datas = imageUris
+
+        imageAdapter.notifyDataSetChanged()
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (data == null) {
+            Toast.makeText(this@AddActivity, "이미지를 선택하지 않았습니다.", Toast.LENGTH_SHORT).show()
+        } else {
+            if (data.getClipData() == null) {
+                val imageUri = data.data
+                imageUri?.let { imageUris.add(it) }
+            } else {
+                val clipData = data.clipData
+
+                if (clipData!!.itemCount + imageUris.size > 3) {
+                    Toast.makeText(applicationContext, "사진은 최대 3장까지 선택 가능합니다.", Toast.LENGTH_SHORT).show()
+                } else {
+                    for (i in 0 until clipData.itemCount) {
+                        val imageUri = clipData.getItemAt(i).uri
+
+                        try {
+                            imageUris.add(imageUri)
+                        } catch (e: Exception) {
+                            Log.e(TAG, "File select error", e)
+                        }
+                    }
+                }
+            }
+
+            imageAdapter.datas = imageUris
+            imageAdapter.notifyDataSetChanged()
+
+            for (imageUri in imageAdapter.datas) {
+                Log.d(TAG, "imageURI : ${imageUri}")
+            }
+        }
     }
 }

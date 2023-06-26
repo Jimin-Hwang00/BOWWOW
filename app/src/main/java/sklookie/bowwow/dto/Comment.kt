@@ -14,11 +14,11 @@ data class Comment (
 
     constructor() : this("", "", "", "", "")
 
-    constructor(comment: String, date: String?, uid: String?) : this("", "", comment, date, uid) {
-        this.comment = comment
-        this.date = date
-        this.uid = uid
-    }
+//    constructor(pid: String, cid: String, comment: String, date: String?, uid: String?) : this("", "", comment, date, uid) {
+//        this.comment = comment
+//        this.date = date
+//        this.uid = uid
+//    }
 
     override fun toString(): String {
         return "cid: ${cid}, comment: ${comment}, date: ${date}, uid: ${uid}"

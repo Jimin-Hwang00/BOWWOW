@@ -4,7 +4,6 @@ import com.google.firebase.database.Exclude
 import com.google.firebase.database.IgnoreExtraProperties
 import java.io.Serializable
 
-
 @IgnoreExtraProperties
 data class Post (
     var pid: String?,
@@ -13,13 +12,13 @@ data class Post (
     var date: String?,
     var uid: String?,
     var views: String?,
-    var image: String?,
+    var images: MutableList<String>?,
     var comments: List<Comment>?
     ) : Serializable {
 
-    constructor() : this("", "", "", "", "", "0", "", null)
+    constructor() : this("", "", "", "", "", "0", null, null)
 
-    constructor(title: String, content: String?, date: String?, uid: String?) : this("", title, content, date, uid, "0", "", null) {
+    constructor(title: String, content: String?, date: String?, uid: String?) : this("", title, content, date, uid, "0", null, null) {
         this.title = title
         this.content = content
         this.date = date
@@ -38,6 +37,6 @@ data class Post (
     }
 
     override fun toString(): String {
-        return "pid: ${pid}, title: ${title}, content: ${content}, date: ${date}, uid: ${uid}, views: ${views}, image: ${image}"
+        return "pid: ${pid}, title: ${title}, content: ${content}, date: ${date}, uid: ${uid}, views: ${views}, image: ${images}"
     }
 }

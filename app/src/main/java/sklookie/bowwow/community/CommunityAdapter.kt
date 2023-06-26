@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.os.AsyncTask
 import android.util.Base64
 import android.util.Log
 import android.view.LayoutInflater
@@ -15,15 +14,18 @@ import android.widget.TextView
 import androidx.core.view.isInvisible
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.google.firebase.storage.FirebaseStorage
 import sklookie.bowwow.R
-import sklookie.bowwow.dao.CommunityDAO
 import sklookie.bowwow.dto.Post
 
-class PostAdapter(private val context: Context) : RecyclerView.Adapter<PostAdapter.ViewHolder>() {
+class CommunityAdapter(private val context: Context) : RecyclerView.Adapter<CommunityAdapter.ViewHolder>() {
 
-    val TAG = "PostAdapter"
+    val TAG = "CommunityAdapter"
 
-    lateinit var datas: MutableList<Post>
+    var datas: MutableList<Post> = mutableListOf()
+
+    val firebaseStorage = FirebaseStorage.getInstance()
+    val rootRef = firebaseStorage.reference
 
     fun updateDatas(newDatas: MutableList<Post>) {
         datas = newDatas
@@ -40,22 +42,29 @@ class PostAdapter(private val context: Context) : RecyclerView.Adapter<PostAdapt
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val data = datas[position]
+        val data = datas!![position]
+
+        Log.d(TAG, "onBindViewHolder data : ${data.toString()}")
 
         holder.itemView.findViewById<TextView>(R.id.item_title_txtView).text = data.title
         holder.itemView.findViewById<TextView>(R.id.item_uid_txtView).text = data.uid
 
         val imageView = holder.itemView.findViewById<ImageView>(R.id.item_image_view)
 
-        if (data.image.isNullOrBlank()) {
+        if (data.images.isNullOrEmpty()) {
             imageView.isInvisible = true
         } else {
             imageView.setImageBitmap(null)
 
-            val decodedByte = StringToBitmap(data.image!!)
-            Glide.with(context)
-                .load(decodedByte)
-                .into(imageView)
+            val imgRef = rootRef.child("post/${data.images!!.get(0)}")
+
+            if (imgRef != null) {
+                imgRef.downloadUrl.addOnSuccessListener {
+                    Glide.with(context)
+                        .load(it)
+                        .into(imageView)
+                }
+            }
         }
 
         var date = data.date
@@ -64,7 +73,10 @@ class PostAdapter(private val context: Context) : RecyclerView.Adapter<PostAdapt
 
         holder.itemView.setOnClickListener {
             val intent = Intent(it.context, PostActivity::class.java)
-            intent.putExtra("pid", data.pid)        // pid 값만 넘김 (PostActivity에서 해당 pid로 게시글 상세 내용 읽어옴)
+            intent.putExtra(
+                "pid",
+                data.pid
+            )        // pid 값만 넘김 (PostActivity에서 해당 pid로 게시글 상세 내용 읽어옴)
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             context.startActivity(intent)
         }
@@ -72,18 +84,6 @@ class PostAdapter(private val context: Context) : RecyclerView.Adapter<PostAdapt
 
     class ViewHolder(v: View) : RecyclerView.ViewHolder(v) {
         private var view: View = v
-    }
-
-    fun StringToBitmap(string: String): Bitmap? {
-        try {
-            val encodeByte = Base64.decode(string, Base64.DEFAULT)
-            val bitmap = BitmapFactory.decodeByteArray(encodeByte, 0, encodeByte.size)
-
-            return bitmap
-        } catch (e: java.lang.Exception) {
-            Log.e("StringToBitmap", e.message.toString())
-            return null;
-        }
     }
 
     //    게시글 검색

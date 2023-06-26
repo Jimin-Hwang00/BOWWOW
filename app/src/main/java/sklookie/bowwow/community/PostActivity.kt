@@ -1,21 +1,26 @@
 package sklookie.bowwow.community
 
+import android.content.Context
 import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
+import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.AsyncTask
 import android.os.Bundle
-import android.util.Base64
+import android.provider.MediaStore
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
+import android.view.inputmethod.InputMethodManager
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.isGone
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.database.*
+import com.google.firebase.storage.FirebaseStorage
 import sklookie.bowwow.R
 import sklookie.bowwow.dao.CommunityDAO
 import sklookie.bowwow.databinding.ActivityPostBinding
@@ -31,9 +36,13 @@ class PostActivity : AppCompatActivity() {
     var post: Post? = Post()
     val dao = CommunityDAO()
 
-    var comments : ArrayList<Comment> = ArrayList()
+    var comments = mutableListOf<Comment>()
     lateinit var commentAdapter: CommentAdapter
     lateinit var commentRecyclerView: RecyclerView
+
+    lateinit var images: MutableList<Uri>
+    lateinit var imageAdapter: MultiImageAdapter
+    lateinit var imageRecyclerView: RecyclerView
 
     val db: FirebaseDatabase = FirebaseDatabase.getInstance()
     lateinit var postReference: DatabaseReference
@@ -49,101 +58,90 @@ class PostActivity : AppCompatActivity() {
 
         intentPid = intent.getStringExtra("pid").toString()
 
-        val asyncTask = object : AsyncTask<String, Void, Post?>() {
-            override fun doInBackground(vararg p0: String?): Post? {
-                postReference = db.getReference("post/${intentPid}")
+        dao.getPostById(intentPid) { post ->
+            if (post != null) {
+                this.post = post
 
-//                파이어베이스에서 데이터 읽어오기
-                val result: Post? = Post()
-                val titleTask = postReference.child("title").get()
-                val uidTask = postReference.child("uid").get()
-                val dateTask = postReference.child("date").get()
-                val viewsTask = postReference.child("views").get()
-                val imageTask = postReference.child("image").get()
-                val contentTask = postReference.child("content").get()
-                val commentTask = postReference.child("comments").get()
+                dao.updateViews(intentPid, post.views!!.toInt())
+                val updatedViews = post.views!!.toInt() + 1
+                post.views = updatedViews.toString()
 
-//                파이어베이스에서 읽어온 데이터 변수에 저장
-                try {
-                    result?.pid = intentPid
+                val imageTasks = ArrayList<Task<Uri>>() // 이미지 다운로드 Task들을 저장하기 위한 리스트
 
-                    val titleSnapshot = Tasks.await(titleTask)
-                    result?.title = titleSnapshot.value.toString()
+//                 이미지 내용 images 변수에 넣기 (댓글 리사이클러뷰에 사용하기 위함)
+                if (post?.images != null) {
+                    val firebaseStorage = FirebaseStorage.getInstance()
+                    val rootRef = firebaseStorage.reference
 
-                    val uidSnapshot = Tasks.await(uidTask)
-                    result?.uid = uidSnapshot.value.toString()
+                    images = MutableList(post.images!!.size) {Uri.EMPTY}
 
-                    val dateSnapshot = Tasks.await(dateTask)
-                    result?.date = dateSnapshot.value.toString()
-
-                    val viewsSnapshot = Tasks.await(viewsTask)
-                    result?.views = (viewsSnapshot.value.toString().toInt() + 1).toString()
-                    dao.updateViews(intentPid, result?.views!!.toInt())
-
-                    val imageSnapshot = Tasks.await(imageTask)
-                    result?.image = imageSnapshot.value.toString()
-
-                    val contentSnapshot = Tasks.await(contentTask)
-                    result?.content = contentSnapshot.value.toString()
-
-                    val commentSnapshot = Tasks.await(commentTask)
-                    val commentsList: MutableList<Comment> = mutableListOf()
-
-                    commentSnapshot.children.forEach { commentDataSnapshot ->
-                        val comment = Comment().apply {
-                            cid = commentDataSnapshot.key
-                            this.comment = commentDataSnapshot.child("comment").value.toString()
-                            this.date = commentDataSnapshot.child("date").value.toString()
-                            this.uid = commentDataSnapshot.child("uid").value.toString()
-                            this.pid = result?.pid
+                    post?.images!!.forEachIndexed() { index, image ->
+                        val imgRef = rootRef.child("post/$image")
+                        Log.d(TAG, "이미지 foreach : post/$image")
+                        if (imgRef != null) {
+                            val imageUrlTask = imgRef.downloadUrl.addOnSuccessListener { uri ->
+                                images[index] = uri
+                                Log.d(TAG, "uri 가져옴 : ${uri.toString()}")
+                            }
+                            imageTasks.add(imageUrlTask)    // 이미지 다운로드 Task를 리스트에 추가
                         }
-                        commentsList.add(comment)
                     }
 
-                    result?.comments = commentsList
-
-                    result?.toString()?.let { Log.d(TAG, it) }
-
-                    return result
-                } catch (e: Exception) {
-                    Log.e(TAG, "데이터 가져오기 오류: ${e.message}")
-                    return null
+//                     모든 이미지 다운로드 Task가 완료되었을 때 initImageRecycler() 함수 호출
+                    Tasks.whenAllSuccess<Uri>(imageTasks)
+                        .addOnSuccessListener {
+                            initImageRecycler()
+                        }
+                        .addOnFailureListener { exception ->
+                            // 이미지 다운로드 중에 오류가 발생한 경우 처리할 내용 추가
+                            Log.e(TAG, "이미지 다운로드 실패: ${exception.message}")
+                        }
+                } else {
+                    images = mutableListOf()
                 }
-            }
 
-            override fun onPostExecute(result: Post?) {
-                super.onPostExecute(result)
-                post = result
+                initImageRecycler()
 
-                setView()
-
-//                댓글 내용 comments 변수에 넣기 (댓글 리사이클러뷰에 사용하기 위함)
-                if (post?.comments != null) {
+//            댓글 내용 comments 변수에 넣기 (댓글 리사이클러뷰에 사용하기 위함)
+                if (!post?.comments.isNullOrEmpty()) {
                     comments = post?.comments as ArrayList<Comment>
                     comments?.sortBy { it.date }
                 }
-
                 initCommentRecycler()
 
-                //        댓글 등록 버튼 클릭 이벤트 설정
-                binding.commentBtn.setOnClickListener {
-                    val comment = binding.commentEditText
-                    if (!comment.text.isNullOrEmpty()) {
-                        lateinit var newComment : Comment
-                        post?.pid?.let { it1 -> newComment = dao.addComment(it1, comment.text.toString(), "uid") }
-                        comments.add(newComment)        // 댓글 리사이클러뷰에 사용되는 comments 변수에 새 댓글 추가
-                        comments?.sortBy { it.date }    // 날짜 순으로 정렬 (오름차순)
-                        commentAdapter.notifyDataSetChanged()
-                        comment.text = null         // 댓글 등록 후 edit 창 비우기
-                    } else {
-                        Toast.makeText(this@PostActivity, "댓글을 입력하세요.", Toast.LENGTH_SHORT).show()
+                setView()
+            } else {
+                Toast.makeText(applicationContext, "게시글이 존재하지 않습니다.", Toast.LENGTH_SHORT).show()
+                finish()
+            }
+
+        }
+
+        //                    댓글 등록 버튼 클릭 이벤트 설정
+        binding.commentBtn.setOnClickListener {
+            val comment = binding.commentEditText
+            if (!comment.text.isNullOrEmpty()) {
+                lateinit var newComment : Comment
+                post?.pid?.let { it1 -> newComment = dao.addComment(it1, comment.text.toString(), "uid", object : CommunityDAO.AddCommentCallback {
+                    override fun onAddCommentComplete() {
+                        updateDataAndView()
                     }
-                }
+                }) }
+
+                comment.text = null         // 댓글 등록 후 edit 창 비우기
+                val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.hideSoftInputFromWindow(binding.commentEditText.windowToken, 0)
+            } else {
+                Toast.makeText(this@PostActivity, "댓글을 입력하세요.", Toast.LENGTH_SHORT).show()
             }
         }
 
-        asyncTask.execute(intentPid)
+        binding.swiper.setOnRefreshListener {
+            updateDataAndView()
+            binding.swiper.isRefreshing = false
+        }
     }
+
 
 //    옵션 메뉴 생성
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -163,60 +161,123 @@ class PostActivity : AppCompatActivity() {
             true
         }
         R.id.menu_delete -> {
-            dao.deletePost(post?.pid.toString())
-
-            finish()
+            dao.deletePost(post?.pid.toString(), post?.images, object : CommunityDAO.DeletePostCallback {
+                override fun onDeletePostComplete() {
+                    finish()
+                }
+            })
 
             true
         }
         else -> true
     }
 
-//    String을 Bitmap으로 변경 (서버에 저장된 이미지 String을 이미지 뷰에 띄우기 위함)
-    fun StringToBitmap(string: String): Bitmap? {
-        try {
-            val encodeByte = Base64.decode(string, Base64.DEFAULT)
-            val bitmap = BitmapFactory.decodeByteArray(encodeByte, 0, encodeByte.size)
-
-            return bitmap
-        } catch (e: java.lang.Exception) {
-            Log.e("StringToBitmap", e.message.toString())
-            return null;
-        }
-    }
-
 //    댓글 리사이클러뷰 설정
     private fun initCommentRecycler() {
-        commentAdapter = CommentAdapter(this)
+        commentAdapter = CommentAdapter(this, object: CommentAdapter.CommentDeletedListener {
+            override fun onCommentDeleted() {
+                updateDataAndView()
+            }
+        })
         commentRecyclerView = binding.commentRecyclerView
 
         commentRecyclerView.layoutManager = LinearLayoutManager(this)
         commentRecyclerView.adapter = commentAdapter
 
-        commentAdapter.datas = comments as MutableList<Comment>
+        commentAdapter.datas = comments
 
         for (comment in commentAdapter.datas) {
-            Log.d(TAG, "comment : ${comment.toString()}")
+            Log.d(TAG, "comment : ${comment}")
         }
 
         commentAdapter.notifyDataSetChanged()
     }
 
+    private fun initImageRecycler() {
+        imageAdapter = MultiImageAdapter(this)
+        imageRecyclerView = binding.postImageRecycler
+
+        imageRecyclerView.layoutManager = LinearLayoutManager(this, RecyclerView.HORIZONTAL, false)
+        imageRecyclerView.adapter = imageAdapter
+
+        imageAdapter.datas = images
+
+        images.forEach {
+            Log.d(TAG, "images에 저장된 uri : $it")
+        }
+
+        imageAdapter.datas.forEach {
+            Log.d(TAG, "adapter data : ${it}")
+        }
+
+        imageAdapter.notifyDataSetChanged()
+    }
+
 //    화면 view 설정
     fun setView() {
-
         binding.titleTextView.text = post?.title
         binding.uidTextView.text = post?.uid
         binding.dateTextView.text = post?.date
         binding.contentTextView.text = post?.content
         binding.viewsTextView.text = post?.views.toString()
-        if (post?.image.isNullOrEmpty()) {
-            binding.postImageView.isGone = true
-            if (post?.content.isNullOrEmpty()) {
-                binding.contentTextView.isGone = true
+    }
+
+    fun updateDataAndView() {
+        Log.d(TAG, "updateDataAndView !!")
+        dao.getPostById(intentPid) {
+            if (it != null) {
+                post = it
+
+                val imageTasks =
+                    ArrayList<Task<Uri>>() // 이미지 다운로드 Task들을 저장하기 위한 리스트
+
+//                 이미지 내용 images 변수에 넣기 (댓글 리사이클러뷰에 사용하기 위함)
+                if (post?.images != null) {
+                    val firebaseStorage = FirebaseStorage.getInstance()
+                    val rootRef = firebaseStorage.reference
+
+                    post?.images!!.forEachIndexed() { index, image ->
+                        val imgRef = rootRef.child("post/$image")
+                        Log.d(TAG, "이미지 foreach : post/$image")
+                        if (imgRef != null) {
+                            val imageUrlTask = imgRef.downloadUrl.addOnSuccessListener { uri ->
+                                images[index] = uri
+                                Log.d(TAG, "uri 가져옴 : ${uri.toString()}")
+                            }
+                            imageTasks.add(imageUrlTask)    // 이미지 다운로드 Task를 리스트에 추가
+                        }
+                    }
+
+//                     모든 이미지 다운로드 Task가 완료되었을 때 initImageRecycler() 함수 호출
+                    Tasks.whenAllSuccess<Uri>(imageTasks)
+                        .addOnSuccessListener {
+                            imageAdapter.datas = images
+                            imageAdapter.notifyDataSetChanged()
+                        }
+                        .addOnFailureListener { exception ->
+                            // 이미지 다운로드 중에 오류가 발생한 경우 처리할 내용 추가
+                            Log.e(TAG, "이미지 다운로드 실패: ${exception.message}")
+                        }
+                }
+
+//            댓글 내용 comments 변수에 넣기 (댓글 리사이클러뷰에 사용하기 위함)
+                if (!post?.comments.isNullOrEmpty()) {
+                    comments = post?.comments as ArrayList<Comment>
+                    comments?.sortBy { it.date }
+                }
+
+                commentAdapter.datas = comments
+                commentAdapter.notifyDataSetChanged()
+
+                setView()
+            } else {
+                Toast.makeText(
+                    applicationContext,
+                    "게시글이 존재하지 않습니다.",
+                    Toast.LENGTH_SHORT
+                ).show()
+                finish()
             }
-        } else {
-            binding.postImageView.setImageBitmap(StringToBitmap(post?.image!!))
         }
     }
 
