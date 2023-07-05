@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">BOWWOW</string>
+    <string name="nextText"><u>계정 없이 진행</u></string>
 </resources>

@@ -21,7 +21,7 @@ class MainActivity : AppCompatActivity() {
         if(pref.getString("bellValue", null).equals(null)){
             //3초후 자동 화면 전환
             Handler(Looper.getMainLooper()).postDelayed(Runnable {
-                val intent = Intent(this@MainActivity, UserInfoActivity::class.java)
+                val intent = Intent(this@MainActivity, LoginActivity::class.java)
                 startActivity(intent)
             }, 3000)
         }else{

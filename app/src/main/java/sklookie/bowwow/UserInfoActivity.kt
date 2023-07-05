@@ -26,7 +26,8 @@ class UserInfoActivity : AppCompatActivity() {
 
 
         val database = Firebase.database
-        val myRef = database.getReference("userInfo").push()
+        val myRef = database.getReference("userInfo")
+        val id : String = intent.getStringExtra("id").toString()
         var userInfo : UserInfoModel = UserInfoModel()
 
         //진행상황 30%설정
@@ -41,10 +42,10 @@ class UserInfoActivity : AppCompatActivity() {
             val intent = Intent(this, DogInfoActivity::class.java)
             userInfo.userName = binding.userName.text.toString()
             userInfo.userDevice = spinner.selectedItem.toString()
-            myRef.child("id").setValue(myRef.key)
-            myRef.child("userDevice").setValue(userInfo.userDevice)
-            myRef.child("userName").setValue(userInfo.userName)
-            intent.putExtra("id", myRef.key)
+
+            myRef.child(id).child("userDevice").setValue(userInfo.userDevice)
+            myRef.child(id).child("userName").setValue(userInfo.userName)
+            intent.putExtra("id", id)
             startActivity(intent)
         }
         binding.backBtn.setOnClickListener{
