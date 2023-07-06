@@ -61,6 +61,7 @@ class MainHomeActivity : AppCompatActivity() {
 
         binding.profile.setOnClickListener{
             val intent = Intent(this, MyInfoActivity::class.java)
+            intent.putExtra("id", id)
             startActivity(intent)
         }
     }
