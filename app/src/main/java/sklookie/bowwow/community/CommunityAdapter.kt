@@ -1,16 +1,14 @@
 package sklookie.bowwow.community
 
 import android.content.Context
-import android.content.Intent
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.util.Base64
+import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isInvisible
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -18,7 +16,10 @@ import com.google.firebase.storage.FirebaseStorage
 import sklookie.bowwow.R
 import sklookie.bowwow.dto.Post
 
-class CommunityAdapter(private val context: Context) : RecyclerView.Adapter<CommunityAdapter.ViewHolder>() {
+private const val TAG_COMMUNITY = "community_fragment"
+private const val TAG_POST = "post_fragment"
+
+class CommunityAdapter(private val context: Context, listener: OnCommunityRecylerItemClick) : RecyclerView.Adapter<CommunityAdapter.ViewHolder>() {
 
     val TAG = "CommunityAdapter"
 
@@ -26,6 +27,8 @@ class CommunityAdapter(private val context: Context) : RecyclerView.Adapter<Comm
 
     val firebaseStorage = FirebaseStorage.getInstance()
     val rootRef = firebaseStorage.reference
+
+    private val mCallback = listener
 
     fun updateDatas(newDatas: MutableList<Post>) {
         datas = newDatas
@@ -44,7 +47,7 @@ class CommunityAdapter(private val context: Context) : RecyclerView.Adapter<Comm
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val data = datas!![position]
 
-        Log.d(TAG, "onBindViewHolder data : ${data.toString()}")
+        Log.d(TAG, "onBindViewHolder data : ${data}")
 
         holder.itemView.findViewById<TextView>(R.id.item_title_txtView).text = data.title
         holder.itemView.findViewById<TextView>(R.id.item_uid_txtView).text = data.uid
@@ -72,13 +75,7 @@ class CommunityAdapter(private val context: Context) : RecyclerView.Adapter<Comm
         holder.itemView.findViewById<TextView>(R.id.item_date_txtView).text = subDate
 
         holder.itemView.setOnClickListener {
-            val intent = Intent(it.context, PostActivity::class.java)
-            intent.putExtra(
-                "pid",
-                data.pid
-            )        // pid 값만 넘김 (PostActivity에서 해당 pid로 게시글 상세 내용 읽어옴)
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            context.startActivity(intent)
+            data.pid?.let { pid -> mCallback.onCommunityRecyclerItemClick(pid) }
         }
     }
 
@@ -98,4 +95,5 @@ class CommunityAdapter(private val context: Context) : RecyclerView.Adapter<Comm
 
         return result
     }
+
 }

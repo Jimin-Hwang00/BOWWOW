@@ -2,16 +2,12 @@ package sklookie.bowwow.community
 
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.net.Uri
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.provider.MediaStore
-import android.util.Base64
 import android.util.Log
-import android.view.Menu
-import android.view.MenuItem
+import android.view.*
+import androidx.fragment.app.Fragment
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
@@ -19,62 +15,69 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
-import com.google.firebase.database.*
+import com.google.firebase.database.DatabaseReference
+import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.storage.FirebaseStorage
 import sklookie.bowwow.R
 import sklookie.bowwow.dao.CommunityDAO
-import sklookie.bowwow.databinding.ActivityAddBinding
+import sklookie.bowwow.databinding.FragmentEditBinding
 import sklookie.bowwow.dto.Post
-import java.io.ByteArrayOutputStream
 
-class EditActivity : AppCompatActivity() {
-    val TAG = "EditActivity"
+class EditFragment : Fragment() {
+    private lateinit var binding: FragmentEditBinding
 
-    private lateinit var binding: ActivityAddBinding
+    private val TAG = "EditFragment"
 
-    var post: Post? = Post()
-    lateinit var intentPid: String
+    private lateinit var post: Post
+    private lateinit var pid: String
 
-    val dao = CommunityDAO()
+    private val dao = CommunityDAO()
 
-    var imageUrl: String = ""
-    var imageString: String = ""
+    private var imageUrl: String = ""
+    private var imageString: String = ""
 
-    val db: FirebaseDatabase = FirebaseDatabase.getInstance()
-    lateinit var postReference: DatabaseReference
+    private val db: FirebaseDatabase = FirebaseDatabase.getInstance()
+    private lateinit var postReference: DatabaseReference
 
-    lateinit var adapterImages : MutableList<Uri>
-    var newImages = mutableListOf<Uri>()
+    private lateinit var adapterImages: MutableList<Uri>
+    private var newImages = mutableListOf<Uri>()
 
-    lateinit var imageAdapter: MultiImageAdapter
-    lateinit var imageRecyclerView: RecyclerView
+    private lateinit var imageAdapter: MultiImageAdapter
+    private lateinit var imageRecyclerView: RecyclerView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding = ActivityAddBinding.inflate(layoutInflater)
-        setContentView(binding.root)
+        setHasOptionsMenu(true)
+    }
 
-        val intent = intent
-        intentPid = intent.getStringExtra("pid").toString()
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        binding = FragmentEditBinding.inflate(inflater, container, false)
+        pid = arguments?.getString("pid").toString()
 
-        Log.d(TAG, "intentPid : ${intentPid}")
+        return binding.root
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        Log.d(TAG, "intentPid : ${pid}")
 
         binding.addImageBtn.setOnClickListener {
-            ActivityCompat.requestPermissions(this@EditActivity, arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE), 1)      // 퍼미션 요구 (1회만)
+            ActivityCompat.requestPermissions(requireActivity(), arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE), 1)      // 퍼미션 요구 (1회만)
 
-            if (ContextCompat.checkSelfPermission(this@EditActivity.applicationContext, android.Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(requireContext().applicationContext, android.Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
                 val intent = Intent(Intent.ACTION_PICK)
                 intent.setType(MediaStore.Images.Media.CONTENT_TYPE)
                 intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
                 intent.setData(MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
                 startActivityForResult(intent, 2222)
             } else {
-                Toast.makeText(this@EditActivity, "갤러리 접근 권한이 거부돼 있습니다. 설정에서 접근을 허용해 주세요.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "갤러리 접근 권한이 거부돼 있습니다. 설정에서 접근을 허용해 주세요.", Toast.LENGTH_SHORT).show()
             }
 
         }
 
-        dao.getPostById(intentPid) { post ->
+        dao.getPostById(pid) { post ->
             if (post != null) {
                 this.post = post
 
@@ -120,65 +123,40 @@ class EditActivity : AppCompatActivity() {
 
                 setView()
             } else {
-                Toast.makeText(applicationContext, "게시글이 존재하지 않습니다.", Toast.LENGTH_SHORT).show()
-                finish()
+                Toast.makeText(requireContext(), "게시글이 존재하지 않습니다.", Toast.LENGTH_SHORT).show()
+
+                fragmentManager?.popBackStack()
             }
         }
 
         binding.addImageBtn.setOnClickListener {
-            ActivityCompat.requestPermissions(this@EditActivity, arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE), 1)      // 퍼미션 요구 (1회만)
+            ActivityCompat.requestPermissions(requireActivity(), arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE), 1)      // 퍼미션 요구 (1회만)
 
-            if (ContextCompat.checkSelfPermission(this@EditActivity.applicationContext, android.Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+            if (ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
                 val intent = Intent(Intent.ACTION_PICK)
                 intent.setType(MediaStore.Images.Media.CONTENT_TYPE)
                 intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
                 intent.setData(MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
                 startActivityForResult(intent, 2222)
             } else {
-                Toast.makeText(this@EditActivity, "갤러리 접근 권한이 거부돼 있습니다. 설정에서 접근을 허용해 주세요.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(requireContext(), "갤러리 접근 권한이 거부돼 있습니다. 설정에서 접근을 허용해 주세요.", Toast.LENGTH_SHORT).show()
             }
 
         }
-
     }
 
-//    옵션 메뉴 생성
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.menu_add_post, menu)
-        return super.onCreateOptionsMenu(menu)
-    }
-
-//    옵션 메뉴 - 게시글 수정
-    override fun onOptionsItemSelected(item: MenuItem): Boolean = when(item.itemId){
-        R.id.menu_add_save -> {
-            val title = binding.titleEditText.text.toString()
-            val content = binding.contentEditText.text.toString()
-
-            dao.editPost(post?.pid.toString(), title, content, adapterImages, post?.images, post!!.images, object :
-                CommunityDAO.EditPostCallback {
-                override fun onEditPostCompleted() {
-                    // 수정이 완료된 후에 호출되는 콜백 함수
-                    finish() // 액티비티를 닫습니다 (CommunityActivity로 돌아감)
-                }
-            })
-
-            true
-        }
-        else -> true
-    }
-
-//    화면 view 설정
+    //    화면 view 설정
     fun setView() {
         binding.titleEditText.setText(post?.title)
         binding.contentEditText.setText(post?.content)
     }
 
-//    MultiImageAdapter와 이미지 RecyclerView 연결
+    //    MultiImageAdapter와 이미지 RecyclerView 연결
     fun initImageRecycler() {
-        imageAdapter = MultiImageAdapter(this)
+        imageAdapter = MultiImageAdapter(requireContext(), requireFragmentManager())
         imageRecyclerView = binding.addImageRecycler
 
-        imageRecyclerView.layoutManager = LinearLayoutManager(this, RecyclerView.HORIZONTAL, false)
+        imageRecyclerView.layoutManager = LinearLayoutManager(requireContext(), RecyclerView.HORIZONTAL, false)
         imageRecyclerView.adapter = imageAdapter
 
         imageAdapter.datas = adapterImages
@@ -186,12 +164,12 @@ class EditActivity : AppCompatActivity() {
         imageAdapter.notifyDataSetChanged()
     }
 
-//    게시글 이미지 선택 후
+    //    게시글 이미지 선택 후
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
         if (data == null) {
-            Toast.makeText(this@EditActivity, "이미지를 선택하지 않았습니다.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(requireContext(), "이미지를 선택하지 않았습니다.", Toast.LENGTH_SHORT).show()
         } else {
             if (data.getClipData() == null) {
                 val imageUri = data.data
@@ -203,7 +181,7 @@ class EditActivity : AppCompatActivity() {
                 val clipData = data.clipData
 
                 if (clipData!!.itemCount + adapterImages.size > 3) {        // 선택된 이미지가 총 4장 이상일 때
-                    Toast.makeText(applicationContext, "사진은 최대 3장까지 선택 가능합니다.", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(requireContext(), "사진은 최대 3장까지 선택 가능합니다.", Toast.LENGTH_SHORT).show()
                 } else {
                     for (i in 0 until clipData.itemCount) {
                         val imageUri = clipData.getItemAt(i).uri
@@ -229,5 +207,31 @@ class EditActivity : AppCompatActivity() {
     companion object {
         lateinit var deletedImageIndex : MutableList<Boolean>       // DB에 저장된 이미지 중 삭제된 이미지 인덱스 저장
         lateinit var postImagesUris : MutableList<Uri>              // DB 이미지 Uri
+    }
+
+    //    옵션 메뉴 생성
+    override fun onCreateOptionsMenu(menu: Menu, menuInflater: MenuInflater) {
+        menu.clear() // 기존 메뉴 항목들을 제거합니다.
+        menuInflater.inflate(R.menu.menu_add_post, menu)
+    }
+
+    //    옵션 메뉴 - 게시글 수정
+    override fun onOptionsItemSelected(item: MenuItem): Boolean = when(item.itemId){
+        R.id.menu_add_save -> {
+            val title = binding.titleEditText.text.toString()
+            val content = binding.contentEditText.text.toString()
+
+            dao.editPost(post?.pid.toString(), title, content, adapterImages, post?.images, post!!.images, object :
+                CommunityDAO.EditPostCallback {
+                    override fun onEditPostCompleted() {
+                        // 수정이 완료된 후에 호출되는 콜백 함수
+                        fragmentManager?.popBackStack()
+                    }
+                }
+            )
+
+            true
+        }
+        else -> true
     }
 }

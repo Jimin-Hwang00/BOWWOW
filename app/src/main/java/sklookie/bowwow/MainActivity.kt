@@ -2,15 +2,10 @@ package sklookie.bowwow
 
 import android.content.Intent
 
-import android.view.View
-import sklookie.bowwow.community.CommunityActivity
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
-import com.google.firebase.database.ktx.database
-import com.google.firebase.ktx.Firebase
+import sklookie.bowwow.community.NavigateActivity
 
 
 class MainActivity : AppCompatActivity() {
@@ -21,7 +16,7 @@ class MainActivity : AppCompatActivity() {
         
 
         findViewById<ImageView>(R.id.community_image).setOnClickListener{
-            val intent = Intent(this, CommunityActivity::class.java)
+            val intent = Intent(this, NavigateActivity::class.java)
             startActivity(intent)
         }
     }

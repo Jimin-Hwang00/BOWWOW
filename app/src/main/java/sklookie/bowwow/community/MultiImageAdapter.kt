@@ -10,16 +10,20 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.AdapterView.OnItemLongClickListener
 import android.widget.ImageView
 import androidx.core.view.isGone
+import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import sklookie.bowwow.R
 
-class MultiImageAdapter(private val context: Context): RecyclerView.Adapter<MultiImageAdapter.ViewHolder>() {
+class MultiImageAdapter(private val context: Context, fragmentManager: FragmentManager): RecyclerView.Adapter<MultiImageAdapter.ViewHolder>() {
     var datas = mutableListOf<Uri>()
 
     private var onItemDeleteListener: OnImageDeleteListener? = null
+
+    private val fragmentManager = fragmentManager
 
     class ViewHolder(v: View) : RecyclerView.ViewHolder(v) {
         private var view: View = v
@@ -42,8 +46,9 @@ class MultiImageAdapter(private val context: Context): RecyclerView.Adapter<Mult
             holder.itemView.findViewById<ImageView>(R.id.image_recycler_view).isGone
         }
 
+        val fragment = fragmentManager.findFragmentById(R.id.mainFrameLayout)
 //        게시글 추가, 수정하는 액티비티일 때 이미지 롱클릭 이벤트 생성 (이미지 삭제 기능)
-        if ((context is AddActivity) or (context is EditActivity)) {
+        if ((fragment is EditFragment) or (fragment is AddFragment)) {
             holder.itemView.findViewById<ImageView>(R.id.image_recycler_view)
                 .setOnLongClickListener {
                     val alertBuilder = AlertDialog.Builder(context)
@@ -54,10 +59,10 @@ class MultiImageAdapter(private val context: Context): RecyclerView.Adapter<Mult
                         "삭제",
                         DialogInterface.OnClickListener { dialogInterface, i ->
 
-                            if (context is EditActivity) {                      // 게시글 수정 액티비티일 경우 삭제하는 이미지가 파이어베이스에 이미 저장된 이미지인지 확인
-                                for (i in 0 until EditActivity.postImagesUris.size) {
-                                    if (EditActivity.postImagesUris[i].equals(data)) {
-                                        EditActivity.deletedImageIndex[i] = true
+                            if (fragment is EditFragment) {                      // 게시글 수정 액티비티일 경우 삭제하는 이미지가 파이어베이스에 이미 저장된 이미지인지 확인
+                                for (i in 0 until EditFragment.postImagesUris.size) {
+                                    if (EditFragment.postImagesUris[i].equals(data)) {
+                                        EditFragment.deletedImageIndex[i] = true
                                     }
                                 }
                             }
@@ -68,6 +73,11 @@ class MultiImageAdapter(private val context: Context): RecyclerView.Adapter<Mult
                             datas.removeAt(datas.size - 1)
 
                             notifyDataSetChanged()
+
+                            datas.forEach {
+                                Log.d("MultiImageAdapter", "MultiImage after deleted : ${it}")
+                            }
+                            Log.d("MultiImageAdapter", "data size after deleting image : ${datas.size}")
 
                         })
                     alertBuilder.setNegativeButton("취소", null)

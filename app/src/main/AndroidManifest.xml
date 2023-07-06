@@ -44,6 +44,8 @@
             android:name=".community.PostActivity"
             android:parentActivityName=".community.CommunityActivity"
             android:windowSoftInputMode="adjustPan"/>
+
+        <activity android:name=".community.NavigateActivity" />
     </application>
 
 </manifest>

@@ -9,7 +9,7 @@ import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.StorageTask
 import com.google.firebase.storage.UploadTask
-import sklookie.bowwow.community.EditActivity
+import sklookie.bowwow.community.EditFragment.Companion.deletedImageIndex
 import sklookie.bowwow.dto.Comment
 import sklookie.bowwow.dto.Post
 import java.time.Instant
@@ -113,7 +113,7 @@ class CommunityDAO {
 
         if (!imageUris.isNullOrEmpty()) {
             for (index in 0 until imageUris!!.size) {
-                if (EditActivity.deletedImageIndex.get(index)) {
+                if (deletedImageIndex.get(index)) {
                     deleteImageTasks.add(deleteImage(imageUris[index]))
                     Log.d(TAG, "deleteImageTasks : ${imageUris[index]}")
                 } else {
@@ -150,14 +150,18 @@ class CommunityDAO {
 
                 Tasks.whenAllComplete(uploadImageTasks).addOnSuccessListener {
                     imageUpdate.put("images", imageList)
-                    updatePostData(pid, titleUpdate, contentUpdate, imageUpdate, dateUpdate, callback)
-
-                    callback.onEditPostCompleted()
+                    val updatePostTasks = updatePostData(pid, titleUpdate, contentUpdate, imageUpdate, dateUpdate)
+                    Tasks.whenAllComplete(updatePostTasks).addOnSuccessListener {
+                        callback.onEditPostCompleted()
+                    }
                 }
             } else {
-                updatePostData(pid, titleUpdate, contentUpdate, imageUpdate, dateUpdate, callback)
+                postDBReference.child(pid).child("images").removeValue()
 
-                callback.onEditPostCompleted()
+                val updatePostTasks = updatePostData(pid, titleUpdate, contentUpdate, imageUpdate, dateUpdate)
+                Tasks.whenAllComplete(updatePostTasks).addOnSuccessListener {
+                    callback.onEditPostCompleted()
+                }
             }
         }
 
@@ -165,13 +169,20 @@ class CommunityDAO {
     }
 
 //    파이어베이스 게시글 update 반영 메소드
-    fun updatePostData(pid: String, titleUpdate: HashMap<String, Any>, contentUpdate: HashMap<String, Any>, imageUpdate: HashMap<String, Any>, dateUpdate: HashMap<String, Any>, callback: EditPostCallback) {
-        postDBReference.child(pid).updateChildren(titleUpdate)
-        postDBReference.child(pid).updateChildren(contentUpdate)
-        postDBReference.child(pid).updateChildren(imageUpdate)
-        postDBReference.child(pid).updateChildren(dateUpdate)
+    fun updatePostData(pid: String, titleUpdate: HashMap<String, Any>, contentUpdate: HashMap<String, Any>, imageUpdate: HashMap<String, Any>, dateUpdate: HashMap<String, Any>) : MutableList<Task<*>> {
+        val updatePostTasks = mutableListOf<Task<*>>()
 
-        callback.onEditPostCompleted()
+        val titleTask = postDBReference.child(pid).updateChildren(titleUpdate)
+        val contentTask = postDBReference.child(pid).updateChildren(contentUpdate)
+        val imageTask = postDBReference.child(pid).updateChildren(imageUpdate)
+        val dateTask = postDBReference.child(pid).updateChildren(dateUpdate)
+
+        updatePostTasks.add(titleTask)
+        updatePostTasks.add(contentTask)
+        updatePostTasks.add(imageTask)
+        updatePostTasks.add(dateTask)
+
+        return updatePostTasks
     }
 
 
@@ -337,27 +348,6 @@ class CommunityDAO {
             }
         } catch (e: Exception) {
             Log.w(TAG, "게시물 불러오기 오류", e)
-            callback(null)
-        }
-    }
-
-    fun getComments(pid: String, callback: (MutableList<Comment>?) -> Unit) {
-        val commentReference = postDBReference.child("post").child(pid).child("comments")
-
-        try {
-            commentReference.get().addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    val commentsMap = task.result?.value as? Map<String, Map<String, Any?>>
-                    val comments = convertComments(commentsMap)
-                    callback(comments)
-                } else {
-                    val error: String? = task.exception?.toString()
-                    Log.w(TAG, "댓글 불러오기 오류 : $error")
-                    callback(null)
-                }
-            }
-        } catch (e: Exception) {
-            Log.w(TAG, "댓글 불러오기 오류", e)
             callback(null)
         }
     }
