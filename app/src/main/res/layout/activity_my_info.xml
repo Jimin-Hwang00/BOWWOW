@@ -10,7 +10,7 @@
         android:id="@+id/bellSaveBt"
         android:layout_width="142dp"
         android:layout_height="47dp"
-        android:layout_marginTop="476dp"
+        android:layout_marginTop="428dp"
         android:text="벨 정보 변경"
         android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -42,7 +42,7 @@
         android:id="@+id/spinner"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="408dp"
+        android:layout_marginTop="364dp"
         android:minWidth="200dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.497"
@@ -70,6 +70,19 @@
         android:text="설정된 벨 :"
         android:textSize="25sp"
         android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/resetBt"
+        android:layout_width="114dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="540dp"
+        android:backgroundTint="#FF4040"
+        android:textStyle="bold"
+        android:textSize="18sp"
+        android:text="계정 삭제"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -35,6 +35,8 @@ class MainHomeActivity : AppCompatActivity() {
                     val bellValue = snapshot?.child(id)?.child("bell")
                     val dogValue = snapshot?.child(id)?.child("dogName")
 
+                    Toast.makeText(this@MainHomeActivity, "들어옴", Toast.LENGTH_SHORT).show()
+
                     val savedName = nameValue?.value.toString()
                     val savedBell = bellValue?.value.toString()
                     val savedDogName = dogValue?.value.toString()
@@ -45,6 +47,8 @@ class MainHomeActivity : AppCompatActivity() {
                     editor.putString("bellValue", savedBell)
                     editor.putString("dogValue", savedDogName)
                     editor.commit()
+
+                    Toast.makeText(this@MainHomeActivity, "${pref.getString("dogValue", null)}", Toast.LENGTH_SHORT).show()
 
                     binding.userName.setText("${nameValue?.value}님")
                     binding.bellText.setText("${dogValue?.value}이의 \n벨훈련")
