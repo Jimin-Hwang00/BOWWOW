@@ -18,9 +18,8 @@ import sklookie.bowwow.databinding.ActivityMyInfoBinding
 class MyInfoActivity : AppCompatActivity() {
     lateinit var MyInfoBinding : ActivityMyInfoBinding
     val database = Firebase.database
-//    val myRef = database.getReference("userInfo")
-//    val pref : SharedPreferences = getSharedPreferences("save_state", 0)
-//    val id = pref.getString("idValue", null).toString()
+    val myRef = database.getReference("userInfo")
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         MyInfoBinding = ActivityMyInfoBinding.inflate(layoutInflater)
@@ -41,41 +40,55 @@ class MyInfoActivity : AppCompatActivity() {
 
             val pref : SharedPreferences = getSharedPreferences("save_state", 0)
             val editor : SharedPreferences.Editor = pref.edit()
+            val id = pref.getString("idValue", null).toString()
+
             editor.putString("bellValue", updatedBellInfo)
             editor.commit()
+            myRef.child(id).child("bell").setValue(updatedBellInfo)
 
             Toast.makeText(this, "변경 완료됐습니다." , Toast.LENGTH_SHORT).show()
             MyInfoBinding.bellInfoText.setText("설정된 벨 : ${updatedBellInfo}")
         }
 
-//        MyInfoBinding.resetBt.setOnClickListener{
-//            AlertDialog.Builder(this).run {
-//                setTitle("계정 삭제")
-//                setIcon(R.drawable.warning)
-//                setMessage("정말로 계정을 삭제하시겠습니까?")
-//                setNegativeButton("취소", null)
-//                setCancelable(false)
-//                setPositiveButton("확인", object: DialogInterface.OnClickListener{
-//                    override fun onClick(p0: DialogInterface?, p1: Int) {
-//                        onDeleteAccount()
-//                    }
-//                })
-//                show()
-//            }
-//        }
+        MyInfoBinding.resetBt.setOnClickListener{
+            AlertDialog.Builder(this).run {
+                setTitle("계정 삭제")
+                setIcon(R.drawable.warning)
+                setMessage("정말로 계정을 삭제하시겠습니까?")
+                setNegativeButton("취소", null)
+                setCancelable(false)
+                setPositiveButton("확인", object: DialogInterface.OnClickListener{
+                    override fun onClick(p0: DialogInterface?, p1: Int) {
+                        onDeleteAccount()
+                    }
+                })
+                show()
+            }
+        }
     }
-//    fun onDeleteAccount() {
-//        myRef.child(id).removeValue()
-//            .addOnSuccessListener(object : OnSuccessListener<Void?>{
-//                override fun onSuccess(p0: Void?) {
-//                    val intent = Intent(this@MyInfoActivity, MainActivity::class.java)
-//                    Toast.makeText(this@MyInfoActivity, "계정 삭제가 완료됐습니다.", Toast.LENGTH_SHORT).show()
-//                    startActivity(intent)
-//                }
-//            }).addOnFailureListener(object : OnFailureListener {
-//                override fun onFailure(p0: java.lang.Exception) {
-//                    Toast.makeText(this@MyInfoActivity, "계정 삭제에 실패했습니다.", Toast.LENGTH_SHORT).show()
-//                }
-//            })
-//    }
+    fun onDeleteAccount() {
+        val pref : SharedPreferences = getSharedPreferences("save_state", 0)
+        val id = pref.getString("idValue", null).toString()
+
+        myRef.child(id).removeValue()
+            .addOnSuccessListener(object : OnSuccessListener<Void?>{
+                override fun onSuccess(p0: Void?) {
+                    val intent = Intent(this@MyInfoActivity, MainActivity::class.java)
+                    val pref : SharedPreferences = getSharedPreferences("save_state", 0)
+                    val editor : SharedPreferences.Editor = pref.edit()
+                    editor.remove("nameValue")
+                    editor.remove("bellValue")
+                    editor.remove("idValue")
+                    editor.remove("dogValue")
+                    editor.commit()
+
+                    Toast.makeText(this@MyInfoActivity, "계정 삭제가 완료됐습니다.", Toast.LENGTH_SHORT).show()
+                    startActivity(intent)
+                }
+            }).addOnFailureListener(object : OnFailureListener {
+                override fun onFailure(p0: java.lang.Exception) {
+                    Toast.makeText(this@MyInfoActivity, "계정 삭제에 실패했습니다.", Toast.LENGTH_SHORT).show()
+                }
+            })
+    }
 }

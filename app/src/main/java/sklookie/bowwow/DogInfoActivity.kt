@@ -1,6 +1,7 @@
 package sklookie.bowwow
 
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -31,7 +32,12 @@ class DogInfoActivity : AppCompatActivity() {
         //다음버튼 클릭시, 반려견 이름 저장
         binding.nextBtn.setOnClickListener{
             val intent = Intent(this, BellActivity::class.java)
+            val pref : SharedPreferences = getSharedPreferences("save_state", 0)
+            val editor : SharedPreferences.Editor = pref.edit()
+
             userInfo.dogName = binding.dogName.text.toString()
+
+            editor.putString("dogValue", userInfo.dogName).commit()
             myRef.child(id).child("dogName").setValue(userInfo.dogName)
             intent.putExtra("id", id)
             startActivity(intent)

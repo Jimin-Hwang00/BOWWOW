@@ -27,8 +27,6 @@ class CompleteActivity : AppCompatActivity() {
         editor.putString("idValue", id)
         editor.commit()
 
-        Toast.makeText(this, "${pref.getString("idValue", null)}", Toast.LENGTH_SHORT).show()
-
         //진행상황 100%설정
         var progressbar = binding.progressBar
         progressbar.setProgress(100)

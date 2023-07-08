@@ -55,6 +55,9 @@ class LoginActivity : AppCompatActivity() {
                 setPositiveButton("확인", object: DialogInterface.OnClickListener{
                     override fun onClick(p0: DialogInterface?, p1: Int) {
                         val intent = Intent(this@LoginActivity, UserInfoActivity::class.java)
+                        val database = Firebase.database
+                        val myRef = database.getReference("userInfo").push()
+                        intent.putExtra("id", myRef.key)
                         startActivity(intent)
                     }
                 })
