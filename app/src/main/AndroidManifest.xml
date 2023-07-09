@@ -17,6 +17,17 @@
         android:enableOnBackInvokedCallback="true">
 
         <activity
+            android:name=".LoginActivity"
+            android:exported="false" />
+        <activity
+            android:name=".MyInfoActivity"
+            android:exported="false"></activity>
+        <activity android:name=".UserInfoActivity" />
+        <activity android:name=".DogInfoActivity" />
+        <activity android:name=".BellActivity" />
+        <activity android:name=".CompleteActivity" />
+        <activity android:name=".MainHomeActivity" />
+        <activity
             android:name=".MainActivity"
             android:exported="true">
             <intent-filter>
@@ -29,23 +40,8 @@
                 android:name="android.app.lib_name"
                 android:value="" />
         </activity>
-        <activity
-            android:name=".community.AddActivity"
-            android:parentActivityName=".community.CommunityActivity"
-            android:windowSoftInputMode="adjustPan"/>
-        <activity
-            android:name=".community.CommunityActivity"
-            android:parentActivityName=".MainActivity" />
-        <activity
-            android:name=".community.EditActivity"
-            android:parentActivityName=".community.CommunityActivity"
-            android:windowSoftInputMode="adjustPan"/>
-        <activity
-            android:name=".community.PostActivity"
-            android:parentActivityName=".community.CommunityActivity"
-            android:windowSoftInputMode="adjustPan"/>
 
-        <activity android:name=".community.NavigateActivity" />
+        <activity android:name=".NavigateActivity" />
     </application>
 
 </manifest>

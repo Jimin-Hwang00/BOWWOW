@@ -16,9 +16,6 @@ import com.google.firebase.storage.FirebaseStorage
 import sklookie.bowwow.R
 import sklookie.bowwow.dto.Post
 
-private const val TAG_COMMUNITY = "community_fragment"
-private const val TAG_POST = "post_fragment"
-
 class CommunityAdapter(private val context: Context, listener: OnCommunityRecylerItemClick) : RecyclerView.Adapter<CommunityAdapter.ViewHolder>() {
 
     val TAG = "CommunityAdapter"

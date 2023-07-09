@@ -8,16 +8,16 @@ import android.provider.MediaStore
 import android.util.Log
 import android.view.*
 import androidx.fragment.app.Fragment
-import android.widget.ImageView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.GoogleAuthProvider
 import sklookie.bowwow.R
 import sklookie.bowwow.dao.CommunityDAO
 import sklookie.bowwow.databinding.FragmentAddBinding
-import kotlin.concurrent.fixedRateTimer
 
 class AddFragment : Fragment() {
     val TAG = "AddFragment"
@@ -46,16 +46,17 @@ class AddFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        setHasOptionsMenu(true)
 
         initImageRecycler()
 
+        //        이미지를 삭제했을 때 동작할 내용
         imageAdapter.setOnItemDeleteListener(object : MultiImageAdapter.OnImageDeleteListener {
             override fun onImageDeleted(position: Int) {
                 imageUris = imageAdapter.datas
             }
         })
 
+        // 이미지 추가 버튼 클릭 리스너 구현 (갤러리 접근)
         binding.addImageBtn.setOnClickListener {
             ActivityCompat.requestPermissions(
                 requireActivity(),
@@ -81,8 +82,28 @@ class AddFragment : Fragment() {
                 ).show()
             }
         }
+
+        // 게시글 저장 버튼 클릭 리스너 구현 (파이어베이스에 게시글 저장)
+        binding.postSaveBtn.setOnClickListener {
+            val auth = FirebaseAuth.getInstance()
+
+            Log.d("AddFragment", "auth.uid : ${auth.uid}")
+
+            dao.addPost(
+                binding.titleEditText.text.toString(),
+                binding.contentEditText.text.toString(),
+                auth.uid,
+                imageUris,
+                object: CommunityDAO.AddPostCallback {
+                    override fun onAddPostCompleted() {
+                        fragmentManager?.popBackStack()
+                    }
+                }
+            )
+        }
     }
 
+//    이미지 리사이클러뷰와 어댑터 연결 작업
     fun initImageRecycler() {
         imageAdapter = MultiImageAdapter(requireContext(), requireFragmentManager())
         imageRecyclerView = binding.addImageRecycler
@@ -95,6 +116,7 @@ class AddFragment : Fragment() {
         imageAdapter.notifyDataSetChanged()
     }
 
+//    갤러리에서 이미지 선택 후 동작
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
@@ -129,33 +151,5 @@ class AddFragment : Fragment() {
                 Log.d(TAG, "imageURI : ${imageUri}")
             }
         }
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu, menuInflater: MenuInflater) {
-        menu.clear()
-        menuInflater.inflate(R.menu.menu_add_post, menu)
-    }
-
-    //    옵션 메뉴 - 게시글 저장 기능
-    override fun onOptionsItemSelected(item: MenuItem): Boolean = when(item.itemId) {
-        R.id.menu_add_save -> {
-            if (binding.titleEditText.text.isNullOrEmpty()) {       // 제목이 입력되지 않았을 경우 Toast 띄움
-                Toast.makeText(requireContext(), "제목을 입력하세요.", Toast.LENGTH_SHORT).show()
-            } else {
-                dao.addPost(
-                    binding.titleEditText.text.toString(),
-                    binding.contentEditText.text.toString(),
-                    imageUris,
-                    object: CommunityDAO.AddPostCallback {
-                        override fun onAddPostCompleted() {
-                            fragmentManager?.popBackStack()
-                        }
-
-                    }
-                )
-            }
-            true
-        }
-        else -> true
     }
 }

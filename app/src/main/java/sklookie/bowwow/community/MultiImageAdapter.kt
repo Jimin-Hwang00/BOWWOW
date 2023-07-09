@@ -59,7 +59,8 @@ class MultiImageAdapter(private val context: Context, fragmentManager: FragmentM
                         "삭제",
                         DialogInterface.OnClickListener { dialogInterface, i ->
 
-                            if (fragment is EditFragment) {                      // 게시글 수정 액티비티일 경우 삭제하는 이미지가 파이어베이스에 이미 저장된 이미지인지 확인
+                            // 게시글 수정 액티비티일 경우 삭제하는 이미지가 파이어베이스에 이미 저장된 이미지인지 확인
+                            if (fragment is EditFragment) {
                                 for (i in 0 until EditFragment.postImagesUris.size) {
                                     if (EditFragment.postImagesUris[i].equals(data)) {
                                         EditFragment.deletedImageIndex[i] = true

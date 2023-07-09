@@ -10,8 +10,9 @@ android {
 
     defaultConfig {
         applicationId "sklookie.bowwow"
+
         minSdk 26
-        targetSdk 32
+        targetSdk 33
         versionCode 1
         versionName "1.0"
 
@@ -31,6 +32,7 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+
     buildFeatures{
         viewBinding true
     }
@@ -44,7 +46,6 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-parcelize'
 
 dependencies {
-
     implementation 'androidx.core:core-ktx:1.7.0'
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.8.0'
@@ -69,4 +70,14 @@ dependencies {
     implementation 'com.google.firebase:firebase-firestore:19.7.0'
 
     implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
+    implementation 'androidx.navigation:navigation-fragment:2.3.2'
+    implementation 'androidx.navigation:navigation-ui:2.3.2'
+    //구글로그인
+    implementation 'com.google.android.gms:play-services-auth:20.2.0'
+
+    implementation platform('com.google.firebase:firebase-bom:31.5.0')
+    implementation 'com.google.firebase:firebase-analytics-ktx'
+
+    implementation("com.google.firebase:firebase-auth-ktx")
+//    implementation("com.google.android.gms:play-services-auth:20.6.0")
 }

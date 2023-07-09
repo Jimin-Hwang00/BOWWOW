@@ -1,6 +1,10 @@
 <resources>
     <string name="app_name">BOWWOW</string>
     <string name="communitySearch">검색어를 입력하세요</string>
-    <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="nextText"><u>계정 없이 진행</u></string>
+    <string name="google_login_dialog_title">구글 로그인</string>
+    <string name="google_login_dialog_message">커뮤니티에 글을 작성하시려면 구글 로그인이 필요합니다. 구글 로그인을 하시겠습니까?</string>
+    <string name="post_delete_dialog_title">게시글 삭제</string>
+    <string name="post_delete_dialog_message">해당 게시글을 삭제하시겠습니까?</string>
 </resources>

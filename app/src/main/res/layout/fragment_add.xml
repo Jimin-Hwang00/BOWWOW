@@ -15,7 +15,7 @@
             android:layout_width="335dp"
             android:layout_height="63dp"
             android:layout_marginStart="36dp"
-            android:layout_marginTop="36dp"
+            android:layout_marginTop="24dp"
             android:background="@drawable/border"
             android:ellipsize="end"
             android:hint="제목을 입력해주세요."
@@ -29,7 +29,7 @@
             android:layout_width="333dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="36dp"
-            android:layout_marginTop="168dp"
+            android:layout_marginTop="120dp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent">
 
@@ -40,7 +40,7 @@
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent">
+                    android:layout_height="100dp">
 
                     <Button
                         android:id="@+id/add_image_btn"
@@ -59,14 +59,31 @@
                 <EditText
                     android:id="@+id/content_edit_text"
                     android:layout_width="match_parent"
-                    android:layout_height="263dp"
-                    android:background="@drawable/border"
+                    android:layout_height="wrap_content"
+                    android:background="@null"
                     android:gravity="top"
                     android:hint="자유롭게 작성해보세요."
                     android:inputType="textMultiLine"
                     android:padding="10dp" />
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="100dp">
+
+                    <Button
+                        android:id="@+id/post_save_btn"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="120dp"
+                        android:layout_marginTop="48dp"
+                        android:text="저장"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
             </LinearLayout>
         </ScrollView>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </FrameLayout>

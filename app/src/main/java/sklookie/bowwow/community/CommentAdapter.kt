@@ -40,7 +40,7 @@ class CommentAdapter(private val context: Context, private val commentDeletedLis
         holder.itemView.findViewById<TextView>(R.id.comment_text).text = "${data.comment}\n"
         holder.itemView.findViewById<TextView>(R.id.comment_info_text).text = "${data.uid}  |  ${data.date}\n"
 
-//        삭제 이미지 클릭 이벤트 설정
+        // 삭제 이미지 클릭 이벤트 설정
         holder.itemView.findViewById<ImageView>(R.id.comment_delete_image).setOnClickListener {
             Log.d("CommentAdapter", "comment delete click -> pid : ${data.pid}, cid : ${data.cid}")
             dao.deleteComment(data.pid!!, data.cid!!, object : CommunityDAO.DeleteCommentCallback {

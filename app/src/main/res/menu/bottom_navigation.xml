@@ -2,7 +2,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <item
-        android:id="@+id/menu1"
+        android:id="@+id/menu_bottom_menu"
         android:enabled="true"
         android:icon="@drawable/menu"
         android:title="메뉴" />
@@ -17,7 +17,7 @@
         android:icon="@drawable/baseline_home_24"
         android:title="홈" />
     <item
-        android:id="@+id/community_menu"
+        android:id="@+id/community_bottom_menu"
         android:enabled="true"
         android:icon="@drawable/chat"
         android:title="커뮤니티" />

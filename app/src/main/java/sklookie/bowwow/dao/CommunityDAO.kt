@@ -46,7 +46,7 @@ class CommunityDAO {
     }
 
 //        게시글 생성 메소드
-    fun addPost(title: String, content: String, imageUris: MutableList<Uri>, callback: AddPostCallback): Post? {
+    fun addPost(title: String, content: String, uid: String?, imageUris: MutableList<Uri>, callback: AddPostCallback): Post? {
        val postId: String? = postDBReference.push().key
 
         val post = Post()
@@ -54,7 +54,7 @@ class CommunityDAO {
         post.title = title
         post.content = content
         post.date = date
-        post.uid = "uid"        // @TODO 로그인 기능 구현 후 수정 필요. (uid)
+        post.uid = uid        // @TODO 로그인 기능 구현 후 수정 필요. (uid)
         post.views = "0"
 
         val imageList = mutableListOf<String>()

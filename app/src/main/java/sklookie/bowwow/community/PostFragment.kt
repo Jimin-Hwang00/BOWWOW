@@ -1,6 +1,8 @@
 package sklookie.bowwow.community
 
+import android.app.AlertDialog
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -15,13 +17,16 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.ContextCompat.getSystemService
+import androidx.core.view.isGone
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.*
 import com.google.firebase.storage.FirebaseStorage
+import sklookie.bowwow.LoginActivity
 import sklookie.bowwow.R
 import sklookie.bowwow.dao.CommunityDAO
 import sklookie.bowwow.databinding.ActivityPostBinding
@@ -46,9 +51,6 @@ class PostFragment : Fragment(), OnCommunityRecylerItemClick {
     lateinit var images: MutableList<Uri>
     lateinit var imageAdapter: MultiImageAdapter
     lateinit var imageRecyclerView: RecyclerView
-
-    val db: FirebaseDatabase = FirebaseDatabase.getInstance()
-    lateinit var postReference: DatabaseReference
 
     override fun onCommunityRecyclerItemClick(pid: String) {
         this.pid = pid
@@ -77,11 +79,25 @@ class PostFragment : Fragment(), OnCommunityRecylerItemClick {
         if (arguments != null) {
             pid = arguments.getString("pid", "")
 
+            // pid를 통해 게시글 가져오기
             dao.getPostById(pid) { post ->
                 if (post != null) {
                     this.post = post
 
                     Log.d("PostFragment", "post data : ${post}, pid : ${pid}")
+
+                    val auth = FirebaseAuth.getInstance()
+                    if (auth.uid.isNullOrEmpty()) {
+                        binding.updateText.isGone = true
+                        binding.deleteText.isGone = true
+                    }
+
+                    if (!auth.uid.isNullOrEmpty()) {
+                        if (!auth.uid.equals(post?.uid)) {
+                            binding.updateText.isGone = true
+                            binding.deleteText.isGone = true
+                        }
+                    }
 
                     dao.updateViews(pid, post.views!!.toInt())
                     val updatedViews = post.views!!.toInt() + 1
@@ -167,45 +183,41 @@ class PostFragment : Fragment(), OnCommunityRecylerItemClick {
             }
         }
 
-        binding.swiper.setOnRefreshListener {
-            updateDataAndView()
-            binding.swiper.isRefreshing = false
-        }
-    }
-
-    //    옵션 메뉴 생성
-    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
-        menu.clear() // 기존 메뉴 항목들을 제거합니다.
-        inflater.inflate(R.menu.menu_extra, menu) // 새로운 메뉴 항목들을 추가합니다.
-    }
-
-
-    //    옵션 메뉴 - 수정, 삭제 기능
-    override fun onOptionsItemSelected(item: MenuItem): Boolean = when(item.itemId){
-        R.id.menu_edit -> {
+        // 게시글 수정 Fragment로 이동 (EditFragment)
+        binding.updateText.setOnClickListener {
             val bundle = Bundle()
             bundle.putString("pid", pid)
 
             val editBundleFragment = EditFragment()
             editBundleFragment.arguments = bundle
             parentFragmentManager.beginTransaction().replace(R.id.mainFrameLayout, editBundleFragment).addToBackStack(null).commit()
-
-            true
         }
-        R.id.menu_delete -> {
-            dao.deletePost(post?.pid.toString(), post?.images, object : CommunityDAO.DeletePostCallback {
-                override fun onDeletePostComplete() {
-                    val fragmentManager = requireActivity().supportFragmentManager
-                    fragmentManager.popBackStack()
-                }
-            })
 
-            true
+        // 게시글 삭제 구현 (삭제 전 AlertDialog로 삭제 의사 물어보기)
+        binding.deleteText.setOnClickListener {
+            AlertDialog.Builder(requireContext())
+                .setTitle(getString(R.string.post_delete_dialog_title))
+                .setMessage(getString(R.string.post_delete_dialog_message))
+                .setPositiveButton("확인", DialogInterface.OnClickListener { dialog, id ->
+                    dao.deletePost(post?.pid.toString(), post?.images, object : CommunityDAO.DeletePostCallback {
+                        override fun onDeletePostComplete() {
+                            val fragmentManager = requireActivity().supportFragmentManager
+                            fragmentManager.popBackStack()
+                        }
+                    })
+                })
+                .setNegativeButton("취소", null)
+                .show()
         }
-        else -> true
+
+        // 당겨서 새로고침 구현 (게시글 데이터 다시 가져오기)
+        binding.swiper.setOnRefreshListener {
+            updateDataAndView()
+            binding.swiper.isRefreshing = false
+        }
     }
 
-    //    댓글 리사이클러뷰 설정
+//    댓글 리사이클러뷰 설정
     private fun initCommentRecycler() {
         commentAdapter = CommentAdapter(requireContext(), object: CommentAdapter.CommentDeletedListener {
             override fun onCommentDeleted() {
@@ -246,7 +258,7 @@ class PostFragment : Fragment(), OnCommunityRecylerItemClick {
         imageAdapter.notifyDataSetChanged()
     }
 
-    //    화면 view 설정
+//    화면 view 설정
     fun setView() {
         binding.titleTextView.text = post?.title
         binding.uidTextView.text = post?.uid
@@ -264,7 +276,7 @@ class PostFragment : Fragment(), OnCommunityRecylerItemClick {
                 val imageTasks =
                     ArrayList<Task<Uri>>() // 이미지 다운로드 Task들을 저장하기 위한 리스트
 
-//                 이미지 내용 images 변수에 넣기 (댓글 리사이클러뷰에 사용하기 위함)
+                // 이미지 내용 images 변수에 넣기 (댓글 리사이클러뷰에 사용하기 위함)
                 if (post?.images != null) {
                     val firebaseStorage = FirebaseStorage.getInstance()
                     val rootRef = firebaseStorage.reference
@@ -283,7 +295,7 @@ class PostFragment : Fragment(), OnCommunityRecylerItemClick {
                         }
                     }
 
-//                     모든 이미지 다운로드 Task가 완료되었을 때 initImageRecycler() 함수 호출
+                    // 모든 이미지 다운로드 Task가 완료되었을 때 initImageRecycler() 함수 호출
                     Tasks.whenAllSuccess<Uri>(imageTasks)
                         .addOnSuccessListener {
                             imageAdapter.datas = images
@@ -295,7 +307,7 @@ class PostFragment : Fragment(), OnCommunityRecylerItemClick {
                         }
                 }
 
-//            댓글 내용 comments 변수에 넣기 (댓글 리사이클러뷰에 사용하기 위함)
+                // 댓글 내용 comments 변수에 넣기 (댓글 리사이클러뷰에 사용하기 위함)
                 if (!post?.comments.isNullOrEmpty()) {
                     comments = post?.comments as ArrayList<Comment>
                     comments?.sortBy { it.date }
@@ -316,12 +328,5 @@ class PostFragment : Fragment(), OnCommunityRecylerItemClick {
                 fragmentManager.popBackStack()
             }
         }
-    }
-
-    override fun onResume() {
-        Toast.makeText(requireContext(), "onResume()", Toast.LENGTH_SHORT).show()
-        updateDataAndView()
-        Log.d("PostFragment", "onResume() data : ${post.toString()}")
-        super.onResume()
     }
 }

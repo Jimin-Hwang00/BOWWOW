@@ -31,8 +31,8 @@
 
             <TextView
                 android:id="@+id/title_text_view"
-                android:layout_width="370dp"
-                android:layout_height="46dp"
+                android:layout_width="375dp"
+                android:layout_height="45dp"
                 android:layout_marginStart="20dp"
                 android:layout_marginTop="19dp"
                 android:text="Title"
@@ -151,6 +151,26 @@
                         android:layout_height="match_parent" />
                 </LinearLayout>
             </ScrollView>
+
+            <TextView
+                android:id="@+id/delete_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:layout_marginEnd="16dp"
+                android:text="삭제"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/title_text_view" />
+
+            <TextView
+                android:id="@+id/update_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:layout_marginEnd="4dp"
+                android:text="수정"
+                app:layout_constraintEnd_toStartOf="@+id/delete_text"
+                app:layout_constraintTop_toBottomOf="@+id/title_text_view" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>

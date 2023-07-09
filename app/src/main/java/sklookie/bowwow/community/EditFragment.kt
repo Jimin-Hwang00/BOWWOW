@@ -33,12 +33,6 @@ class EditFragment : Fragment() {
 
     private val dao = CommunityDAO()
 
-    private var imageUrl: String = ""
-    private var imageString: String = ""
-
-    private val db: FirebaseDatabase = FirebaseDatabase.getInstance()
-    private lateinit var postReference: DatabaseReference
-
     private lateinit var adapterImages: MutableList<Uri>
     private var newImages = mutableListOf<Uri>()
 
@@ -62,6 +56,7 @@ class EditFragment : Fragment() {
 
         Log.d(TAG, "intentPid : ${pid}")
 
+        // 이미지 추가 버튼 클릭 리스너 구현 (갤러리 접근)
         binding.addImageBtn.setOnClickListener {
             ActivityCompat.requestPermissions(requireActivity(), arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE), 1)      // 퍼미션 요구 (1회만)
 
@@ -77,6 +72,7 @@ class EditFragment : Fragment() {
 
         }
 
+        // pid를 통해 게시글 불러오기
         dao.getPostById(pid) { post ->
             if (post != null) {
                 this.post = post
@@ -129,29 +125,30 @@ class EditFragment : Fragment() {
             }
         }
 
-        binding.addImageBtn.setOnClickListener {
-            ActivityCompat.requestPermissions(requireActivity(), arrayOf(android.Manifest.permission.READ_EXTERNAL_STORAGE), 1)      // 퍼미션 요구 (1회만)
 
-            if (ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                val intent = Intent(Intent.ACTION_PICK)
-                intent.setType(MediaStore.Images.Media.CONTENT_TYPE)
-                intent.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
-                intent.setData(MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
-                startActivityForResult(intent, 2222)
-            } else {
-                Toast.makeText(requireContext(), "갤러리 접근 권한이 거부돼 있습니다. 설정에서 접근을 허용해 주세요.", Toast.LENGTH_SHORT).show()
-            }
+        // 수정된 게시글 저장 버튼 클릭 리스너 구현 (파이어베이스 데이터 수정)
+        binding.postUpdateBtn.setOnClickListener {
+            val title = binding.titleEditText.text.toString()
+            val content = binding.contentEditText.text.toString()
 
+            dao.editPost(post?.pid.toString(), title, content, adapterImages, post?.images, post!!.images, object :
+                CommunityDAO.EditPostCallback {
+                    override fun onEditPostCompleted() {
+                        // 수정이 완료된 후에 호출되는 콜백 함수
+                        fragmentManager?.popBackStack()
+                    }
+                }
+            )
         }
     }
 
-    //    화면 view 설정
+//     화면 view 설정
     fun setView() {
         binding.titleEditText.setText(post?.title)
         binding.contentEditText.setText(post?.content)
     }
 
-    //    MultiImageAdapter와 이미지 RecyclerView 연결
+//     MultiImageAdapter와 이미지 RecyclerView 연결
     fun initImageRecycler() {
         imageAdapter = MultiImageAdapter(requireContext(), requireFragmentManager())
         imageRecyclerView = binding.addImageRecycler
@@ -164,7 +161,7 @@ class EditFragment : Fragment() {
         imageAdapter.notifyDataSetChanged()
     }
 
-    //    게시글 이미지 선택 후
+//    게시글 이미지 선택 후
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
@@ -207,31 +204,5 @@ class EditFragment : Fragment() {
     companion object {
         lateinit var deletedImageIndex : MutableList<Boolean>       // DB에 저장된 이미지 중 삭제된 이미지 인덱스 저장
         lateinit var postImagesUris : MutableList<Uri>              // DB 이미지 Uri
-    }
-
-    //    옵션 메뉴 생성
-    override fun onCreateOptionsMenu(menu: Menu, menuInflater: MenuInflater) {
-        menu.clear() // 기존 메뉴 항목들을 제거합니다.
-        menuInflater.inflate(R.menu.menu_add_post, menu)
-    }
-
-    //    옵션 메뉴 - 게시글 수정
-    override fun onOptionsItemSelected(item: MenuItem): Boolean = when(item.itemId){
-        R.id.menu_add_save -> {
-            val title = binding.titleEditText.text.toString()
-            val content = binding.contentEditText.text.toString()
-
-            dao.editPost(post?.pid.toString(), title, content, adapterImages, post?.images, post!!.images, object :
-                CommunityDAO.EditPostCallback {
-                    override fun onEditPostCompleted() {
-                        // 수정이 완료된 후에 호출되는 콜백 함수
-                        fragmentManager?.popBackStack()
-                    }
-                }
-            )
-
-            true
-        }
-        else -> true
     }
 }
