@@ -46,7 +46,10 @@ class UserInfoActivity : AppCompatActivity() {
             userInfo.userName = binding.userName.text.toString()
             userInfo.userDevice = spinner.selectedItem.toString()
 
-            editor.putString("nameValue", userInfo.userName).commit()
+            editor.putString("nameValue", userInfo.userName)
+            editor.putString("deviceValue", userInfo.userDevice)
+            editor.commit()
+
             myRef.child(id).child("userDevice").setValue(userInfo.userDevice)
             myRef.child(id).child("userName").setValue(userInfo.userName)
             intent.putExtra("id", id)

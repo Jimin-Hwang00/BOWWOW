@@ -26,28 +26,25 @@ class MyInfoActivity : AppCompatActivity() {
         setContentView(MyInfoBinding.root)
 
         val pref = getSharedPreferences("save_state", 0)
-        val bellInfo = pref.getString("bellValue", null)
-        val prefUNameInfo = pref.getString("nameValue", null)
+        val uName = pref.getString("nameValue", null).toString()
+        val device = pref.getString("deviceValue", null).toString()
+        val bell = pref.getString("bellValue", null).toString()
+        val dogName = pref.getString("dogValue", null).toString()
 
-        MyInfoBinding.uNameText.setText("${prefUNameInfo}님의 정보")
-        MyInfoBinding.bellInfoText.setText("설정된 벨 : ${bellInfo}")
+        MyInfoBinding.uNameText.setText("${uName}님의 정보")
+        MyInfoBinding.bellInfoText.setText("설정된 벨 : ${bell}")
+        MyInfoBinding.deviceInfoText.setText("설정된 장치: ${device}")
+        MyInfoBinding.uNameInfoText.setText("반려인 이름: ${uName}")
+        MyInfoBinding.dogNameInfoText.setText("반려견 이름: ${dogName}")
 
-        var spinner = MyInfoBinding.spinner
-        spinner.adapter = ArrayAdapter.createFromResource(this, R.array.bellList, android.R.layout.simple_spinner_item)
+        MyInfoBinding.bluetoothButton.setOnClickListener{
+            val intent = Intent(this@MyInfoActivity, MyInfoUpdateActivity::class.java)
+            startActivity(intent)
+        }
 
         MyInfoBinding.bellSaveBt.setOnClickListener{
-            var updatedBellInfo = spinner.selectedItem.toString()
-
-            val pref : SharedPreferences = getSharedPreferences("save_state", 0)
-            val editor : SharedPreferences.Editor = pref.edit()
-            val id = pref.getString("idValue", null).toString()
-
-            editor.putString("bellValue", updatedBellInfo)
-            editor.commit()
-            myRef.child(id).child("bell").setValue(updatedBellInfo)
-
-            Toast.makeText(this, "변경 완료됐습니다." , Toast.LENGTH_SHORT).show()
-            MyInfoBinding.bellInfoText.setText("설정된 벨 : ${updatedBellInfo}")
+            val intent = Intent(this@MyInfoActivity, MyInfoUpdateActivity::class.java)
+            startActivity(intent)
         }
 
         MyInfoBinding.resetBt.setOnClickListener{
