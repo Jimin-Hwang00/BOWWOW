@@ -38,7 +38,7 @@ class MyInfoActivity : AppCompatActivity() {
         MyInfoBinding.dogNameInfoText.setText("반려견 이름: ${dogName}")
 
         MyInfoBinding.bluetoothButton.setOnClickListener{
-            val intent = Intent(this@MyInfoActivity, MyInfoUpdateActivity::class.java)
+            val intent = Intent(this@MyInfoActivity, BluetoothMainActivity::class.java)
             startActivity(intent)
         }
 
