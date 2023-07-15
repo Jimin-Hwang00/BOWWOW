@@ -1,14 +1,12 @@
 package sklookie.bowwow.community
 
 import android.content.Context
-import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isInvisible
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -37,7 +35,7 @@ class CommunityAdapter(private val context: Context, listener: OnCommunityRecyle
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(context).inflate(R.layout.item_view, parent, false)
+        val view = LayoutInflater.from(context).inflate(R.layout.community_item_view, parent, false)
         return ViewHolder(view)
     }
 
@@ -47,7 +45,7 @@ class CommunityAdapter(private val context: Context, listener: OnCommunityRecyle
         Log.d(TAG, "onBindViewHolder data : ${data}")
 
         holder.itemView.findViewById<TextView>(R.id.item_title_txtView).text = data.title
-        holder.itemView.findViewById<TextView>(R.id.item_uid_txtView).text = data.uid
+        holder.itemView.findViewById<TextView>(R.id.item_uname_txtView).text = data.uname
 
         val imageView = holder.itemView.findViewById<ImageView>(R.id.item_image_view)
 

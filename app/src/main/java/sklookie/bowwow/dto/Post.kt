@@ -11,18 +11,20 @@ data class Post (
     var content: String?,
     var date: String?,
     var uid: String?,
+    var uname: String?,
     var views: String?,
     var images: MutableList<String>?,
     var comments: List<Comment>?
     ) : Serializable {
 
-    constructor() : this("", "", "", "", "", "0", null, null)
+    constructor() : this("", "", "", "", "","", "0", null, null)
 
-    constructor(title: String, content: String?, date: String?, uid: String?) : this("", title, content, date, uid, "0", null, null) {
+    constructor(title: String, content: String?, date: String?, uid: String?, uname: String?) : this("", title, content, date, uid, uname, "0", null, null) {
         this.title = title
         this.content = content
         this.date = date
         this.uid = uid
+        this.uname = uname
     }
 
     @Exclude
@@ -37,6 +39,6 @@ data class Post (
     }
 
     override fun toString(): String {
-        return "pid: ${pid}, title: ${title}, content: ${content}, date: ${date}, uid: ${uid}, views: ${views}, image: ${images}"
+        return "pid: ${pid}, title: ${title}, content: ${content}, date: ${date}, uid: ${uid}, views: ${views}"
     }
 }

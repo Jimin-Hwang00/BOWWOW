@@ -1,16 +1,13 @@
 package sklookie.bowwow.community
 
 import android.app.AlertDialog
-import android.app.Dialog
 import android.content.Context
 import android.content.DialogInterface
 import android.net.Uri
-import android.provider.ContactsContract.CommonDataKinds.Im
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView.OnItemLongClickListener
 import android.widget.ImageView
 import androidx.core.view.isGone
 import androidx.fragment.app.FragmentManager
@@ -30,7 +27,7 @@ class MultiImageAdapter(private val context: Context, fragmentManager: FragmentM
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(context).inflate(R.layout.image_recycler_item, parent, false)
+        val view = LayoutInflater.from(context).inflate(R.layout.image_item_view, parent, false)
         return ViewHolder(view)
     }
 

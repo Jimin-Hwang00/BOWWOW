@@ -78,8 +78,6 @@ class LoginActivity : AppCompatActivity() {
             val TAG = "구글 로그인 결과"
             val account = completedTask.getResult(ApiException::class.java)
 
-
-
             Log.d(TAG, account.id!!)
             Log.d(TAG, account.familyName!!)
             Log.d(TAG, account.givenName!!)
@@ -101,6 +99,8 @@ class LoginActivity : AppCompatActivity() {
                         if(id.equals(null)){                // 다른 설정 정보가 아직 저장되어 있지 않은 경우
                             val myRef = database.getReference("userInfo").push()
                             myRef.child("googleInfo").child("uid").setValue(FirebaseAuth.getInstance().uid)
+                            myRef.child("googleInfo").child("familyName").setValue(account.familyName)
+                            myRef.child("googleInfo").child("givenName").setValue(account.givenName)
 
                             val intent = Intent(this@LoginActivity, UserInfoActivity::class.java)
                             intent.putExtra("id", myRef.key)

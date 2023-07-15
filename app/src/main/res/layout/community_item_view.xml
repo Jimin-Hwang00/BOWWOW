@@ -20,12 +20,12 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/item_uid_txtView"
+        android:id="@+id/item_uname_txtView"
         android:layout_width="87dp"
         android:layout_height="20dp"
         android:layout_marginTop="72dp"
         android:layout_marginEnd="292dp"
-        android:text="uid"
+        android:text="uname"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 

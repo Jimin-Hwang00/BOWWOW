@@ -38,7 +38,7 @@ class CommentAdapter(private val context: Context, private val commentDeletedLis
         val data = datas[position]
 
         holder.itemView.findViewById<TextView>(R.id.comment_text).text = "${data.comment}\n"
-        holder.itemView.findViewById<TextView>(R.id.comment_info_text).text = "${data.uid}  |  ${data.date}\n"
+        holder.itemView.findViewById<TextView>(R.id.comment_info_text).text = "${data.uname}  |  ${data.date}\n"
 
         // 삭제 이미지 클릭 이벤트 설정
         holder.itemView.findViewById<ImageView>(R.id.comment_delete_image).setOnClickListener {

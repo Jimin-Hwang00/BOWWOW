@@ -9,10 +9,11 @@ data class Comment (
         var cid: String?,
         var comment: String?,
         var date: String?,
-        var uid: String?
+        var uid: String?,
+        var uname: String?
     ) : Serializable {
 
-    constructor() : this("", "", "", "", "")
+    constructor() : this("", "", "", "", "", "")
 
 //    constructor(pid: String, cid: String, comment: String, date: String?, uid: String?) : this("", "", comment, date, uid) {
 //        this.comment = comment
@@ -21,6 +22,6 @@ data class Comment (
 //    }
 
     override fun toString(): String {
-        return "cid: ${cid}, comment: ${comment}, date: ${date}, uid: ${uid}"
+        return "cid: ${cid}, comment: ${comment}, date: ${date}, uid: ${uid}, uname: ${uname}"
     }
 }

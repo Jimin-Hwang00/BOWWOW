@@ -1,22 +1,15 @@
 package sklookie.bowwow.community
 
 import android.app.AlertDialog
-import android.content.Context
 import android.content.DialogInterface
-import android.content.Intent
-import android.content.pm.PackageManager
+import android.content.SharedPreferences
 import android.net.Uri
-import android.os.AsyncTask
 import android.os.Bundle
-import android.provider.MediaStore
 import android.util.Log
 import android.view.*
 import android.view.inputmethod.InputMethodManager
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import androidx.core.content.ContextCompat.getSystemService
 import androidx.core.view.isGone
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -24,14 +17,14 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.*
 import com.google.firebase.storage.FirebaseStorage
-import sklookie.bowwow.LoginActivity
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import sklookie.bowwow.R
 import sklookie.bowwow.dao.CommunityDAO
-import sklookie.bowwow.databinding.ActivityPostBinding
 import sklookie.bowwow.databinding.FragmentPostBinding
 import sklookie.bowwow.dto.Comment
+import sklookie.bowwow.dto.GoogleInfo
 import sklookie.bowwow.dto.Post
 
 class PostFragment : Fragment(), OnCommunityRecylerItemClick {
@@ -139,7 +132,7 @@ class PostFragment : Fragment(), OnCommunityRecylerItemClick {
 
                     initImageRecycler()
 
-//            댓글 내용 comments 변수에 넣기 (댓글 리사이클러뷰에 사용하기 위함)
+                    // 댓글 내용 comments 변수에 넣기 (댓글 리사이클러뷰에 사용하기 위함)
                     if (!post?.comments.isNullOrEmpty()) {
                         comments = post?.comments as ArrayList<Comment>
                         comments?.sortBy { it.date }
@@ -160,27 +153,47 @@ class PostFragment : Fragment(), OnCommunityRecylerItemClick {
         //  댓글 등록 버튼 클릭 이벤트 설정
         binding.commentBtn.setOnClickListener {
             val comment = binding.commentEditText
-            if (!comment.text.isNullOrEmpty()) {
-                lateinit var newComment: Comment
-                post?.pid?.let { pid ->
-                    newComment = dao.addComment(
-                        pid,
-                        comment.text.toString(),
-                        "uid",
-                        object : CommunityDAO.AddCommentCallback {
-                            override fun onAddCommentComplete() {
-                                updateDataAndView()
-                            }
-                        })
-                }
 
-                comment.text = null         // 댓글 등록 후 edit 창 비우기
-                val imm =
-                    requireActivity().getSystemService(AppCompatActivity.INPUT_METHOD_SERVICE) as InputMethodManager
-                imm.hideSoftInputFromWindow(binding.commentEditText.windowToken, 0)
-            } else {
-                Toast.makeText(requireContext(), "댓글을 입력하세요.", Toast.LENGTH_SHORT).show()
+            val pref : SharedPreferences = requireActivity().getSharedPreferences("save_state", 0)
+            val id = pref.getString("idValue", null)
+
+            var googleInfo = GoogleInfo()
+            dao.getGoogleInfoByID(id!!) {
+                if (googleInfo != null) {
+                    googleInfo = it
+
+                    val uid = FirebaseAuth.getInstance().uid.toString()
+                    val uname = "${googleInfo.familyName}${googleInfo.givenName}"
+
+                    if (!comment.text.isNullOrEmpty()) {
+                        lateinit var newComment: Comment
+                        post?.pid?.let { pid ->
+                            newComment = dao.addComment(
+                                pid,
+                                comment.text.toString(),
+                                uid,
+                                uname,
+                                object : CommunityDAO.AddCommentCallback {
+                                    override fun onAddCommentComplete() {
+                                        updateDataAndView()
+                                    }
+                                })
+                        }
+
+                        comment.text = null         // 댓글 등록 후 edit 창 비우기
+                        val imm =
+                            requireActivity().getSystemService(AppCompatActivity.INPUT_METHOD_SERVICE) as InputMethodManager
+                        imm.hideSoftInputFromWindow(binding.commentEditText.windowToken, 0)
+                    } else {
+                        Toast.makeText(requireContext(), "댓글을 입력하세요.", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    Log.d(TAG, "Failed to get googleInfo")
+                    Toast.makeText(requireContext(), "로그인이 제대로 되어 있는지 확인해주시기 바랍니다.", Toast.LENGTH_SHORT).show()
+                }
             }
+
+
         }
 
         // 게시글 수정 Fragment로 이동 (EditFragment)
@@ -261,7 +274,7 @@ class PostFragment : Fragment(), OnCommunityRecylerItemClick {
 //    화면 view 설정
     fun setView() {
         binding.titleTextView.text = post?.title
-        binding.uidTextView.text = post?.uid
+        binding.unameTextView.text = post?.uname
         binding.dateTextView.text = post?.date
         binding.contentTextView.text = post?.content
         binding.viewsTextView.text = post?.views.toString()

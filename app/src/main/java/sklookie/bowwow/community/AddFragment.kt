@@ -1,6 +1,7 @@
 package sklookie.bowwow.community
 
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
@@ -14,10 +15,11 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.auth.GoogleAuthProvider
-import sklookie.bowwow.R
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import sklookie.bowwow.dao.CommunityDAO
 import sklookie.bowwow.databinding.FragmentAddBinding
+import sklookie.bowwow.dto.GoogleInfo
 
 class AddFragment : Fragment() {
     val TAG = "AddFragment"
@@ -89,17 +91,39 @@ class AddFragment : Fragment() {
 
             Log.d("AddFragment", "auth.uid : ${auth.uid}")
 
-            dao.addPost(
-                binding.titleEditText.text.toString(),
-                binding.contentEditText.text.toString(),
-                auth.uid,
-                imageUris,
-                object: CommunityDAO.AddPostCallback {
-                    override fun onAddPostCompleted() {
-                        fragmentManager?.popBackStack()
+            val pref : SharedPreferences = requireActivity().getSharedPreferences("save_state", 0)
+            val id = pref.getString("idValue", null)
+
+            var googleInfo = GoogleInfo()
+
+            val title = binding.titleEditText.text
+
+            if (title.isNullOrEmpty()) {
+                Toast.makeText(requireContext(), "제목을 입력해주세요.", Toast.LENGTH_SHORT).show()
+            } else {
+                dao.getGoogleInfoByID(id!!) {result ->
+                    if (googleInfo != null) {
+                        googleInfo = result
+
+                        val uname = "${googleInfo?.familyName}${googleInfo?.givenName}"
+                        dao.addPost(
+                            binding.titleEditText.text.toString(),
+                            binding.contentEditText.text.toString(),
+                            auth.uid,
+                            uname,
+                            imageUris,
+                            object: CommunityDAO.AddPostCallback {
+                                override fun onAddPostCompleted() {
+                                    fragmentManager?.popBackStack()
+                                }
+                            }
+                        )
+                    } else {
+                        Log.d(TAG, "Failed to get googleInfo")
+                        Toast.makeText(requireContext(), "로그인이 제대로 되어 있는지 확인해주시기 바랍니다.", Toast.LENGTH_SHORT).show()
                     }
                 }
-            )
+            }
         }
     }
 

@@ -61,7 +61,7 @@
                 app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
-                android:id="@+id/uid_text_view"
+                android:id="@+id/uname_text_view"
                 android:layout_width="178dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="76dp"

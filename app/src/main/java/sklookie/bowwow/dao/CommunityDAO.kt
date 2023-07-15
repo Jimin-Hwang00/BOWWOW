@@ -11,17 +11,22 @@ import com.google.firebase.storage.StorageTask
 import com.google.firebase.storage.UploadTask
 import sklookie.bowwow.community.EditFragment.Companion.deletedImageIndex
 import sklookie.bowwow.dto.Comment
+import sklookie.bowwow.dto.GoogleInfo
 import sklookie.bowwow.dto.Post
 import java.time.Instant
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import kotlin.collections.HashMap
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 class CommunityDAO {
     val TAG="CommunityDAO"
 
     val realtimeDB: FirebaseDatabase = FirebaseDatabase.getInstance()
+
     val postDBReference: DatabaseReference = realtimeDB.getReference("post")
+    val userInfoDB = realtimeDB.getReference("userInfo")
 
     val storage: FirebaseStorage = FirebaseStorage.getInstance()
     val postStorageRefence: StorageReference = storage.getReference("post")
@@ -46,7 +51,7 @@ class CommunityDAO {
     }
 
 //        게시글 생성 메소드
-    fun addPost(title: String, content: String, uid: String?, imageUris: MutableList<Uri>, callback: AddPostCallback): Post? {
+    fun addPost(title: String, content: String, uid: String?, uname: String?, imageUris: MutableList<Uri>, callback: AddPostCallback): Post? {
        val postId: String? = postDBReference.push().key
 
         val post = Post()
@@ -54,8 +59,11 @@ class CommunityDAO {
         post.title = title
         post.content = content
         post.date = date
-        post.uid = uid        // @TODO 로그인 기능 구현 후 수정 필요. (uid)
+        post.uid = uid
+        post.uname = uname
         post.views = "0"
+
+        Log.d(TAG, "addPost -> uname : ${uname}")
 
         val imageList = mutableListOf<String>()
 
@@ -223,7 +231,7 @@ class CommunityDAO {
     }
 
 //        댓글 작성 메소드
-    fun addComment(pid: String, comment: String, uid: String, callback: AddCommentCallback): Comment {
+    fun addComment(pid: String, comment: String, uid: String, uname: String, callback: AddCommentCallback): Comment {
         val commentHashMap = HashMap<String, Any>()
 
         val date = Instant.ofEpochMilli(System.currentTimeMillis())
@@ -237,7 +245,7 @@ class CommunityDAO {
 
         val commentKey =
                 postDBReference.child(pid).child("comments").push().key
-        val comment = Comment(pid, commentKey, comment, date, uid)
+        val comment = Comment(pid, commentKey, comment, date, uid, uname)
 
 
         if (commentKey != null) {
@@ -295,6 +303,7 @@ class CommunityDAO {
                                 content = postMap["content"] as? String,
                                 date = postMap["date"] as? String,
                                 uid = postMap["uid"] as? String,
+                                uname = postMap["uname"] as? String,
                                 views = postMap["views"] as? String,
                                 images = (postMap["images"] as? MutableList<String>)
                                     ?: null,
@@ -335,6 +344,7 @@ class CommunityDAO {
                         content = postMap["content"] as? String,
                         date = postMap["date"] as? String,
                         uid = postMap["uid"] as? String,
+                        uname = postMap["uname"] as? String,
                         views = postMap["views"] as? String,
                         images = (postMap["images"] as? MutableList<String>) ?: null,
                         comments = convertComments(postMap["comments"])
@@ -365,7 +375,8 @@ class CommunityDAO {
                         comment = it["comment"] as? String,
                         date = it["date"] as? String,
                         pid = it["pid"] as? String,
-                        uid = it["uid"] as? String
+                        uid = it["uid"] as? String,
+                        uname = it["uname"] as? String
                     )
                 }
                 Log.d(TAG, "comment: ${comment}")
@@ -375,4 +386,32 @@ class CommunityDAO {
         }
         return mutableListOf()
     }
+
+    fun getGoogleInfoByID(id: String, callback: (GoogleInfo) -> Unit) {
+        userInfoDB.child(id).child("googleInfo").get().addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                val dataSnapshot = task.result
+
+                val familyName = dataSnapshot.child("familyName").getValue(String::class.java)
+                val givenName = dataSnapshot.child("givenName").getValue(String::class.java)
+                val uid = dataSnapshot.child("uid").getValue(String::class.java)
+
+                Log.d(TAG, "googleInfo: $uid, $familyName, $givenName")
+
+                val googleInfo = GoogleInfo()
+                googleInfo.familyName = familyName.toString()
+                googleInfo.givenName = givenName.toString()
+                googleInfo.uid = uid.toString()
+
+                Log.d(TAG, "return googleInfo: ${googleInfo.uid}, ${googleInfo.familyName}, ${googleInfo.givenName}")
+
+                callback(googleInfo)
+            } else {
+                // 처리 실패 시에 대한 로직을 추가할 수 있습니다.
+                // 예: callback(null)
+            }
+        }
+    }
+
+
 }

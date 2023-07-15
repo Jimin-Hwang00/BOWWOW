@@ -5,7 +5,9 @@ import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import sklookie.bowwow.community.AddFragment
 import sklookie.bowwow.community.CommunityFragment
+import sklookie.bowwow.community.EditFragment
 import sklookie.bowwow.community.PostFragment
 import sklookie.bowwow.community.TAG_COMMUNITY
 import sklookie.bowwow.databinding.ActivityNavigateBinding
@@ -27,20 +29,6 @@ class NavigateActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         id = intent.getStringExtra("id").toString()
-        Log.d("NavigateActivity", "intent id : ${id}")
-//        setFragment(TAG_MAINHOME, MainHomeFragment())
-
-//        binding.navigationView.setOnItemSelectedListener { item ->
-//            when (item.itemId) {
-//                R.id.community_bottom_menu -> {
-//                    setFragment(TAG_COMMUNITY, CommunityFragment())
-//                }
-//                R.id.menu_bottom_menu -> {
-//                    setFragment(TAG_MAINHOME, MainHomeFragment())
-//                }
-//            }
-//            true
-//        }
 
         binding.navigationView.run { setOnNavigationItemSelectedListener {
             when (it.itemId) {
@@ -97,7 +85,7 @@ class NavigateActivity : AppCompatActivity() {
     override fun onBackPressed() {
         val fragment = fragmentManager.findFragmentById(R.id.mainFrameLayout)
 
-        if (fragment is PostFragment) {
+        if (fragment is PostFragment || fragment is AddFragment || fragment is EditFragment) {
             fragmentManager.popBackStack()
         } else {
             return
