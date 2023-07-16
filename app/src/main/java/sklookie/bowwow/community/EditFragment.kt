@@ -11,14 +11,12 @@ import androidx.fragment.app.Fragment
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.storage.FirebaseStorage
-import sklookie.bowwow.R
 import sklookie.bowwow.dao.CommunityDAO
 import sklookie.bowwow.databinding.FragmentEditBinding
 import sklookie.bowwow.dto.Post
@@ -33,8 +31,7 @@ class EditFragment : Fragment() {
 
     private val dao = CommunityDAO()
 
-    private lateinit var adapterImages: MutableList<Uri>
-    private var newImages = mutableListOf<Uri>()
+    private lateinit var images: MutableList<Uri>
 
     private lateinit var imageAdapter: MultiImageAdapter
     private lateinit var imageRecyclerView: RecyclerView
@@ -77,42 +74,15 @@ class EditFragment : Fragment() {
             if (post != null) {
                 this.post = post
 
-                val imageTasks = ArrayList<Task<Uri>>() // 이미지 다운로드 Task들을 저장하기 위한 리스트
-
-//                 이미지 내용 images 변수에 넣기 (댓글 리사이클러뷰에 사용하기 위함)
+                // 이미지 내용 images 변수에 넣기 (댓글 리사이클러뷰에 사용하기 위함)
                 if (post?.images != null) {
-                    val firebaseStorage = FirebaseStorage.getInstance()
-                    val rootRef = firebaseStorage.reference
+                    images = MutableList(post?.images!!.size) {Uri.EMPTY}
 
-                    adapterImages = MutableList(post?.images!!.size) {Uri.EMPTY}
-
-                    post?.images!!.forEachIndexed { index, image ->
-                        val imgRef = rootRef.child("post/$image")
-                        postImagesUris = MutableList(post?.images!!.size) { Uri.EMPTY}
-                        if (imgRef != null) {
-                            val imageUrlTask = imgRef.downloadUrl.addOnSuccessListener { uri ->
-                                adapterImages[index] = uri
-                                postImagesUris[index] = uri
-                            }
-                            imageTasks.add(imageUrlTask)    // 이미지 다운로드 Task를 리스트에 추가
-                        }
+                    post?.images!!.forEachIndexed() { index, image ->
+                        images[index] = post?.images!![index].toUri()
                     }
-
-//                     모든 이미지 다운로드 Task가 완료되었을 때 initImageRecycler() 함수 호출
-                    Tasks.whenAllSuccess<Uri>(imageTasks)
-                        .addOnSuccessListener {
-                            initImageRecycler()
-                        }
-                        .addOnFailureListener { exception ->
-                            // 이미지 다운로드 중에 오류가 발생한 경우 처리할 내용 추가
-                            Log.e(TAG, "이미지 다운로드 실패: ${exception.message}")
-                        }
-
-                    deletedImageIndex = MutableList(post?.images!!.size) {false}
                 } else {
-                    adapterImages = mutableListOf()
-                    deletedImageIndex = mutableListOf()
-                    postImagesUris = mutableListOf()
+                    images = mutableListOf()
                 }
 
                 initImageRecycler()
@@ -120,7 +90,6 @@ class EditFragment : Fragment() {
                 setView()
             } else {
                 Toast.makeText(requireContext(), "게시글이 존재하지 않습니다.", Toast.LENGTH_SHORT).show()
-
                 fragmentManager?.popBackStack()
             }
         }
@@ -131,14 +100,19 @@ class EditFragment : Fragment() {
             val title = binding.titleEditText.text.toString()
             val content = binding.contentEditText.text.toString()
 
-            dao.editPost(post?.pid.toString(), title, content, adapterImages, post?.images, post!!.images, object :
-                CommunityDAO.EditPostCallback {
+            if (title.isNullOrEmpty()) {
+                Toast.makeText(requireContext(), "제목을 작성해주세요.", Toast.LENGTH_SHORT).show()
+            } else {
+                // 게시글 수정
+                dao.editPost(post?.pid.toString(), title, content, images, object :
+                    CommunityDAO.EditPostCallback {
                     override fun onEditPostCompleted() {
                         // 수정이 완료된 후에 호출되는 콜백 함수
                         fragmentManager?.popBackStack()
                     }
                 }
-            )
+                )
+            }
         }
     }
 
@@ -156,7 +130,7 @@ class EditFragment : Fragment() {
         imageRecyclerView.layoutManager = LinearLayoutManager(requireContext(), RecyclerView.HORIZONTAL, false)
         imageRecyclerView.adapter = imageAdapter
 
-        imageAdapter.datas = adapterImages
+        imageAdapter.datas = images
 
         imageAdapter.notifyDataSetChanged()
     }
@@ -171,20 +145,19 @@ class EditFragment : Fragment() {
             if (data.getClipData() == null) {
                 val imageUri = data.data
                 imageUri?.let {
-                    adapterImages.add(it)
-                    newImages.add(it)
+                    images.add(it)
                 }
             } else {
                 val clipData = data.clipData
 
-                if (clipData!!.itemCount + adapterImages.size > 3) {        // 선택된 이미지가 총 4장 이상일 때
+                if (clipData!!.itemCount + images.size > 3) {        // 선택된 이미지가 총 4장 이상일 때
                     Toast.makeText(requireContext(), "사진은 최대 3장까지 선택 가능합니다.", Toast.LENGTH_SHORT).show()
                 } else {
                     for (i in 0 until clipData.itemCount) {
                         val imageUri = clipData.getItemAt(i).uri
 
                         try {
-                            adapterImages.add(imageUri)
+                            images.add(imageUri)
                         } catch (e: Exception) {
                             Log.e(TAG, "File select error", e)
                         }
@@ -192,7 +165,7 @@ class EditFragment : Fragment() {
                 }
             }
 
-            imageAdapter.datas = adapterImages
+            imageAdapter.datas = images
             imageAdapter.notifyDataSetChanged()
 
             for (imageUri in imageAdapter.datas) {
@@ -202,7 +175,6 @@ class EditFragment : Fragment() {
     }
 
     companion object {
-        lateinit var deletedImageIndex : MutableList<Boolean>       // DB에 저장된 이미지 중 삭제된 이미지 인덱스 저장
-        lateinit var postImagesUris : MutableList<Uri>              // DB 이미지 Uri
+        var deletedImageUri : MutableList<String> = mutableListOf()     // 삭제된 이미지 Uri 담는 변수
     }
 }

@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.core.net.toUri
 import androidx.core.view.isInvisible
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
@@ -48,21 +49,13 @@ class CommunityAdapter(private val context: Context, listener: OnCommunityRecyle
         holder.itemView.findViewById<TextView>(R.id.item_uname_txtView).text = data.uname
 
         val imageView = holder.itemView.findViewById<ImageView>(R.id.item_image_view)
-
         if (data.images.isNullOrEmpty()) {
             imageView.isInvisible = true
         } else {
             imageView.setImageBitmap(null)
-
-            val imgRef = rootRef.child("post/${data.images!!.get(0)}")
-
-            if (imgRef != null) {
-                imgRef.downloadUrl.addOnSuccessListener {
-                    Glide.with(context)
-                        .load(it)
-                        .into(imageView)
-                }
-            }
+            Glide.with(context)
+                .load(data.images!![0].toUri())
+                .into(imageView)
         }
 
         var date = data.date

@@ -10,6 +10,7 @@ import android.view.*
 import android.view.inputmethod.InputMethodManager
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.net.toUri
 import androidx.core.view.isGone
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -96,40 +97,17 @@ class PostFragment : Fragment(), OnCommunityRecylerItemClick {
                     val updatedViews = post.views!!.toInt() + 1
                     post.views = updatedViews.toString()
 
-                    val imageTasks = ArrayList<Task<Uri>>() // 이미지 다운로드 Task들을 저장하기 위한 리스트
-
                     // 이미지 내용 images 변수에 넣기 (댓글 리사이클러뷰에 사용하기 위함)
                     if (post?.images != null) {
-                        val firebaseStorage = FirebaseStorage.getInstance()
-                        val rootRef = firebaseStorage.reference
-
-                        images = MutableList(post.images!!.size) { Uri.EMPTY }
+                        images = MutableList(post?.images!!.size) {Uri.EMPTY}
 
                         post?.images!!.forEachIndexed() { index, image ->
-                            val imgRef = rootRef.child("post/$image")
-                            Log.d(TAG, "이미지 foreach : post/$image")
-                            if (imgRef != null) {
-                                val imageUrlTask = imgRef.downloadUrl.addOnSuccessListener { uri ->
-                                    images[index] = uri
-                                    Log.d(TAG, "uri 가져옴 : ${uri.toString()}")
-                                }
-                                imageTasks.add(imageUrlTask) // 이미지 다운로드 Task를 리스트에 추가
-                            }
+                            images[index] = post?.images!![index].toUri()
+                            Log.d(TAG, "onViewCreated : ${images[index]}")
                         }
-
-                        // 모든 이미지 다운로드 Task가 완료되었을 때 initImageRecycler() 함수 호출
-                        Tasks.whenAllSuccess<Uri>(imageTasks)
-                            .addOnSuccessListener {
-                                initImageRecycler()
-                            }
-                            .addOnFailureListener { exception ->
-                                // 이미지 다운로드 중에 오류가 발생한 경우 처리할 내용 추가
-                                Log.e(TAG, "이미지 다운로드 실패: ${exception.message}")
-                            }
                     } else {
                         images = mutableListOf()
                     }
-
                     initImageRecycler()
 
                     // 댓글 내용 comments 변수에 넣기 (댓글 리사이클러뷰에 사용하기 위함)
@@ -280,45 +258,26 @@ class PostFragment : Fragment(), OnCommunityRecylerItemClick {
         binding.viewsTextView.text = post?.views.toString()
     }
 
+//    게시글 내용을 업데이트한 후 화면에 반영
     fun updateDataAndView() {
         Log.d(TAG, "updateDataAndView !!")
         dao.getPostById(pid) {
             if (it != null) {
                 post = it
 
-                val imageTasks =
-                    ArrayList<Task<Uri>>() // 이미지 다운로드 Task들을 저장하기 위한 리스트
-
                 // 이미지 내용 images 변수에 넣기 (댓글 리사이클러뷰에 사용하기 위함)
                 if (post?.images != null) {
-                    val firebaseStorage = FirebaseStorage.getInstance()
-                    val rootRef = firebaseStorage.reference
-
-                    images = MutableList(post?.images!!.size) { Uri.EMPTY }
+                    images = MutableList(post?.images!!.size) {Uri.EMPTY}
 
                     post?.images!!.forEachIndexed() { index, image ->
-                        val imgRef = rootRef.child("post/$image")
-                        Log.d(TAG, "이미지 foreach : post/$image")
-                        if (imgRef != null) {
-                            val imageUrlTask = imgRef.downloadUrl.addOnSuccessListener { uri ->
-                                images[index] = uri
-                                Log.d(TAG, "uri 가져옴 : ${uri.toString()}")
-                            }
-                            imageTasks.add(imageUrlTask)    // 이미지 다운로드 Task를 리스트에 추가
-                        }
+                        images[index] = post?.images!![index].toUri()
                     }
-
-                    // 모든 이미지 다운로드 Task가 완료되었을 때 initImageRecycler() 함수 호출
-                    Tasks.whenAllSuccess<Uri>(imageTasks)
-                        .addOnSuccessListener {
-                            imageAdapter.datas = images
-                            imageAdapter.notifyDataSetChanged()
-                        }
-                        .addOnFailureListener { exception ->
-                            // 이미지 다운로드 중에 오류가 발생한 경우 처리할 내용 추가
-                            Log.e(TAG, "이미지 다운로드 실패: ${exception.message}")
-                        }
+                } else {
+                    images = mutableListOf()
                 }
+
+                imageAdapter.datas = images
+                imageAdapter.notifyDataSetChanged()
 
                 // 댓글 내용 comments 변수에 넣기 (댓글 리사이클러뷰에 사용하기 위함)
                 if (!post?.comments.isNullOrEmpty()) {

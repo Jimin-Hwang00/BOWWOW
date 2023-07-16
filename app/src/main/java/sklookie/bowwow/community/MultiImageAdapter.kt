@@ -55,15 +55,7 @@ class MultiImageAdapter(private val context: Context, fragmentManager: FragmentM
                     alertBuilder.setPositiveButton(
                         "삭제",
                         DialogInterface.OnClickListener { dialogInterface, i ->
-
-                            // 게시글 수정 액티비티일 경우 삭제하는 이미지가 파이어베이스에 이미 저장된 이미지인지 확인
-                            if (fragment is EditFragment) {
-                                for (i in 0 until EditFragment.postImagesUris.size) {
-                                    if (EditFragment.postImagesUris[i].equals(data)) {
-                                        EditFragment.deletedImageIndex[i] = true
-                                    }
-                                }
-                            }
+                            EditFragment.deletedImageUri.add(data.toString())
 
                             for (i in position until datas.size - 1) {
                                 datas[i] = datas[i + 1]
@@ -71,11 +63,6 @@ class MultiImageAdapter(private val context: Context, fragmentManager: FragmentM
                             datas.removeAt(datas.size - 1)
 
                             notifyDataSetChanged()
-
-                            datas.forEach {
-                                Log.d("MultiImageAdapter", "MultiImage after deleted : ${it}")
-                            }
-                            Log.d("MultiImageAdapter", "data size after deleting image : ${datas.size}")
 
                         })
                     alertBuilder.setNegativeButton("취소", null)

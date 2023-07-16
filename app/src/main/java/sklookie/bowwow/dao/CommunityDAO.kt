@@ -9,7 +9,7 @@ import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.StorageTask
 import com.google.firebase.storage.UploadTask
-import sklookie.bowwow.community.EditFragment.Companion.deletedImageIndex
+import sklookie.bowwow.community.EditFragment
 import sklookie.bowwow.dto.Comment
 import sklookie.bowwow.dto.GoogleInfo
 import sklookie.bowwow.dto.Post
@@ -17,8 +17,6 @@ import java.time.Instant
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import kotlin.collections.HashMap
-import kotlin.coroutines.resume
-import kotlin.coroutines.suspendCoroutine
 
 class CommunityDAO {
     val TAG="CommunityDAO"
@@ -51,7 +49,7 @@ class CommunityDAO {
     }
 
 //        게시글 생성 메소드
-    fun addPost(title: String, content: String, uid: String?, uname: String?, imageUris: MutableList<Uri>, callback: AddPostCallback): Post? {
+    fun addPost(title: String, content: String, uid: String?, uname: String?, imageUris: MutableList<Uri>, callback: AddPostCallback) {
        val postId: String? = postDBReference.push().key
 
         val post = Post()
@@ -69,7 +67,6 @@ class CommunityDAO {
 
         if (!imageUris.isNullOrEmpty()) {
             val uploadImageTasks = mutableListOf<Task<*>>()
-
             for (i in 0 until imageUris.size) {
                 val imageName = System.currentTimeMillis()
                 val imgRef = postStorageRefence.child("${postId}/${imageName}")
@@ -83,30 +80,34 @@ class CommunityDAO {
                 }
             }
 
+            val downloadedUris = mutableListOf<String>()
+            val downloadImageUriTasks = ArrayList<Task<Uri>>()
             Tasks.whenAllComplete(uploadImageTasks).addOnSuccessListener {
-                post.images = imageList
-
-                val posted = postId?.let { postDBReference.child(it).setValue(post) }
-                postId?.let { postDBReference.child(it).child("comments") }
-                if (posted == null) {
-                    Log.w(TAG, "게시물 저장에 실패했습니다.");
+                imageList.forEach { imageName ->
+                    val uriTask = postStorageRefence.child(imageName).downloadUrl.addOnSuccessListener {uri ->
+                        downloadedUris.add(uri.toString())
+                        Log.d(TAG, "downloaded uris : ${uri}")
+                    }
+                    downloadImageUriTasks.add(uriTask)
                 }
 
-                callback.onAddPostCompleted()
+                Tasks.whenAllComplete(downloadImageUriTasks).addOnSuccessListener {
+                    post.images = downloadedUris
+
+                    post.images!!.forEach {
+                        Log.d(TAG, "post.images : ${it}")
+                    }
+
+                    val posted = postId?.let { postDBReference.child(it).setValue(post) }
+                    postId?.let { postDBReference.child(it).child("comments") }
+                    if (posted == null) {
+                        Log.w(TAG, "게시물 저장에 실패했습니다.");
+                    }
+
+                    callback.onAddPostCompleted()
+                }
             }
-
-            return post
         }
-
-        val posted = postId?.let { postDBReference.child(it).setValue(post) }
-        postId?.let { postDBReference.child(it).child("comments") }
-        if (posted == null) {
-            Log.w(TAG, "게시물 저장에 실패했습니다.");
-        }
-
-        callback.onAddPostCompleted()
-
-        return post
     }
 
     interface EditPostCallback {
@@ -114,66 +115,88 @@ class CommunityDAO {
     }
 
 //        게시글 수정 메소드
-    fun editPost(pid: String, title: String, content: String, newImageUris: MutableList<Uri>, imageUris: MutableList<String>?, postImage: MutableList<String>?, callback: EditPostCallback) {
+    fun editPost(pid: String, title: String, content: String, imageUris: MutableList<Uri>, callback: EditPostCallback) {
         val deleteImageTasks = mutableListOf<Task<*>>()
 
         val imageList = mutableListOf<String>()
 
-        if (!imageUris.isNullOrEmpty()) {
-            for (index in 0 until imageUris!!.size) {
-                if (deletedImageIndex.get(index)) {
-                    deleteImageTasks.add(deleteImage(imageUris[index]))
-                    Log.d(TAG, "deleteImageTasks : ${imageUris[index]}")
-                } else {
-                    imageList.add(postImage!!.get(index))
-                    Log.d(TAG, "image add : ${imageUris[index]}")
+        // 삭제한 이미지 Uri 처리
+        EditFragment.deletedImageUri.forEach { uri ->
+            try {
+                val imgRef = storage.getReferenceFromUrl(uri)
+                if (imgRef != null) {                               // 삭제한 이미지가 Storage에 있을 때
+                    val deleteTask = imgRef.delete().addOnSuccessListener {
+                        Log.d(TAG, "이미지 삭제 완료 : ${uri}")
+                    }.addOnFailureListener {
+                        Log.d(TAG, "이미지 삭제 실패 : ${uri}")
+                    }
+                    deleteImageTasks.add(deleteTask)
                 }
+            } catch (e: java.lang.IllegalArgumentException) {       // 삭제된 이미지가 서버에 올라간 이미지가 아닐 때 오류 catch
+                Log.d(TAG, "editPost : 이미지 삭제 에러 (${e})")
             }
         }
 
-        Tasks.whenAllComplete(deleteImageTasks).addOnSuccessListener {
-            var titleUpdate: HashMap<String, Any> = HashMap()
-            var contentUpdate: HashMap<String, Any> = HashMap()
-            var imageUpdate: HashMap<String, Any> = HashMap()
-            var dateUpdate: HashMap<String, Any> = HashMap()
+        var titleUpdate: HashMap<String, Any> = HashMap()
+        var contentUpdate: HashMap<String, Any> = HashMap()
+        var imageUpdate: HashMap<String, Any> = HashMap()
+        var dateUpdate: HashMap<String, Any> = HashMap()
 
-            titleUpdate.put("title", title)
-            contentUpdate.put("content", content)
-            dateUpdate.put("date", date)
+        titleUpdate.put("title", title)
+        contentUpdate.put("content", content)
+        dateUpdate.put("date", date)
 
-            if (!newImageUris.isNullOrEmpty()) {
-                val uploadImageTasks = mutableListOf<Task<*>>()
+        if (!imageUris.isNullOrEmpty()) {
+            val uploadImageTasks = mutableListOf<Task<*>>()
 
-                for (i in 0 until newImageUris.size) {
+            imageUris.forEach { uri ->
+                try {
+                    val imgRef = storage.getReferenceFromUrl(uri.toString())
+                    if (imgRef != null) {                               // 이미지가 이미 Storage에 있을 때
+                        imageList.add(uri.toString())
+                    }
+                } catch (e: java.lang.IllegalArgumentException) {       // 이미지가 Storage에 없을 때 (새로운 이미지 등록)
                     val imageName = System.currentTimeMillis()
-                    val imgRef = postStorageRefence.child("${pid}/${imageName}")
-                    val addImageTask = addImage(imgRef, newImageUris.get(i))
+                    val newImgRef = postStorageRefence.child("${pid}/${imageName}")
+                    val uploadTask = addImage(newImgRef, uri)
+                    uploadImageTasks.add(uploadTask)
 
-                    uploadImageTasks.add(addImageTask)
+                    Tasks.whenAllComplete(uploadTask).addOnSuccessListener {        // 이미지가 Storage에 업로드 완료되었을 때
+                        val uriTask = postStorageRefence.child("${pid}/${imageName}").downloadUrl.addOnSuccessListener {uri ->
+                            imageList.add(uri.toString())
+                        }
 
-                    addImageTask.addOnSuccessListener {
-                        imageList.add("${pid}/${imageName}")
+                        Tasks.whenAllComplete(uriTask).addOnSuccessListener {       // 이미지의 Uri를 다운로드 완료했을 때
+                            if (imageList.size == imageUris.size) {                                        // 모든 이미지를 처리했는지 확인
+                                imageUpdate.put("images", imageList)
+
+                                val updatePostTask = updatePostData(pid, titleUpdate, contentUpdate, imageUpdate, dateUpdate)
+
+                                Tasks.whenAllComplete(updatePostTask).addOnSuccessListener {
+                                    callback.onEditPostCompleted()
+                                }
+                            }
+                        }
                     }
                 }
-
-                Tasks.whenAllComplete(uploadImageTasks).addOnSuccessListener {
-                    imageUpdate.put("images", imageList)
-                    val updatePostTasks = updatePostData(pid, titleUpdate, contentUpdate, imageUpdate, dateUpdate)
-                    Tasks.whenAllComplete(updatePostTasks).addOnSuccessListener {
-                        callback.onEditPostCompleted()
-                    }
-                }
-            } else {
-                postDBReference.child(pid).child("images").removeValue()
+            }
+            if (imageList.size == imageUris.size) {               // 모든 이미지를 처리했는지 확인
+                imageUpdate.put("images", imageList)
 
                 val updatePostTasks = updatePostData(pid, titleUpdate, contentUpdate, imageUpdate, dateUpdate)
+
                 Tasks.whenAllComplete(updatePostTasks).addOnSuccessListener {
                     callback.onEditPostCompleted()
                 }
             }
-        }
+        } else {
+            postDBReference.child(pid).child("images").removeValue()        // 이미지가 없을 때 실시간 데이터베이스에 있는 이미지 DB를 삭제
 
-        callback.onEditPostCompleted()
+            val updatePostTasks = updatePostData(pid, titleUpdate, contentUpdate, imageUpdate, dateUpdate)
+            Tasks.whenAllComplete(updatePostTasks).addOnSuccessListener {
+                callback.onEditPostCompleted()
+            }
+        }
     }
 
 //    파이어베이스 게시글 update 반영 메소드
@@ -200,9 +223,16 @@ class CommunityDAO {
 
 //        게시글 삭제 메소드
     fun deletePost(pid: String, images: MutableList<String>?, callback: DeletePostCallback) {
-        if (images != null && images.size != 0) {
-            for (image in images!!) {
-                deleteImage(image)
+        if (images != null) {
+            images.forEach { uri ->
+                val imgRef = storage.getReferenceFromUrl(uri)
+                if (imgRef != null) {
+                    imgRef.delete().addOnSuccessListener {
+                        Log.d(TAG, "이미지 삭제 완료 : ${uri}")
+                    }.addOnFailureListener {
+                        Log.d(TAG, "이미지 삭제 실패 : ${uri}")
+                    }
+                }
             }
         }
 
@@ -210,7 +240,7 @@ class CommunityDAO {
         Tasks.whenAllComplete(deleteTask).addOnSuccessListener {
             callback.onDeletePostComplete()
         }
-    }
+   }
 
 //        조회수 업데이트 메소드
     fun updateViews(pid: String, views: Int) {
@@ -271,16 +301,6 @@ class CommunityDAO {
        val task = postDBReference.child(pid).child("comments").child(cid).removeValue()
         Tasks.whenAllComplete(task).addOnSuccessListener {
             callback.onDeleteCommentComplete()
-        }
-    }
-
-//    파이어베이스 이미지 삭제 메소드
-    fun deleteImage(url: String): Task<Void> {
-        val image = postStorageRefence.child(url)
-        return image.delete().addOnSuccessListener {
-            Log.d(TAG, "이미지 삭제 완료 : post/${url}")
-        }.addOnFailureListener {
-            Log.d(TAG, "이미지 삭제 실패 : post/${url}")
         }
     }
 
@@ -387,6 +407,7 @@ class CommunityDAO {
         return mutableListOf()
     }
 
+//    ID 값을 통한 GoogleInfo 반환 메소드
     fun getGoogleInfoByID(id: String, callback: (GoogleInfo) -> Unit) {
         userInfoDB.child(id).child("googleInfo").get().addOnCompleteListener { task ->
             if (task.isSuccessful) {
@@ -407,11 +428,8 @@ class CommunityDAO {
 
                 callback(googleInfo)
             } else {
-                // 처리 실패 시에 대한 로직을 추가할 수 있습니다.
-                // 예: callback(null)
+                Log.d(TAG, "구글 계정 정보 불러오기 실패")
             }
         }
     }
-
-
 }
