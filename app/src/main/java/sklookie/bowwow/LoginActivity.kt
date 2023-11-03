@@ -98,9 +98,10 @@ class LoginActivity : AppCompatActivity() {
 
                         if(id.equals(null)){                // 다른 설정 정보가 아직 저장되어 있지 않은 경우
                             val myRef = database.getReference("userInfo").push()
-                            myRef.child("googleInfo").child("uid").setValue(FirebaseAuth.getInstance().uid)
-                            myRef.child("googleInfo").child("familyName").setValue(account.familyName)
-                            myRef.child("googleInfo").child("givenName").setValue(account.givenName)
+//                            myRef.child("googleInfo").child("uid").setValue(FirebaseAuth.getInstance().uid)
+                            myRef.child("uid").setValue(FirebaseAuth.getInstance().uid)
+//                            myRef.child("googleInfo").child("familyName").setValue(account.familyName)
+//                            myRef.child("googleInfo").child("givenName").setValue(account.givenName)
 
                             val intent = Intent(this@LoginActivity, UserInfoActivity::class.java)
                             intent.putExtra("id", myRef.key)

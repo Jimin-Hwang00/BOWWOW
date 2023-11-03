@@ -15,8 +15,6 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.auth.FirebaseAuth
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
 import sklookie.bowwow.dao.CommunityDAO
 import sklookie.bowwow.databinding.FragmentAddBinding
 import sklookie.bowwow.dto.GoogleInfo
@@ -101,33 +99,26 @@ class AddFragment : Fragment() {
             if (title.isNullOrEmpty()) {
                 Toast.makeText(requireContext(), "제목을 입력해주세요.", Toast.LENGTH_SHORT).show()
             } else {
-                dao.getGoogleInfoByID(id!!) {result ->
-                    if (googleInfo != null) {
-                        googleInfo = result
-
-                        val uname = "${googleInfo?.familyName}${googleInfo?.givenName}"
-                        dao.addPost(
-                            binding.titleEditText.text.toString(),
-                            binding.contentEditText.text.toString(),
-                            auth.uid,
-                            uname,
-                            imageUris,
-                            object: CommunityDAO.AddPostCallback {
-                                override fun onAddPostCompleted() {
-                                    fragmentManager?.popBackStack()
-                                }
+                try {
+                    dao.addPost(
+                        binding.titleEditText.text.toString(),
+                        binding.contentEditText.text.toString(),
+                        auth.uid,
+                        imageUris,
+                        object : CommunityDAO.AddPostCallback {
+                            override fun onAddPostCompleted() {
+                                fragmentManager?.popBackStack()
                             }
-                        )
-                    } else {
-                        Log.d(TAG, "Failed to get googleInfo")
-                        Toast.makeText(requireContext(), "로그인이 제대로 되어 있는지 확인해주시기 바랍니다.", Toast.LENGTH_SHORT).show()
-                    }
+                        }
+                    )
+                } catch (e: Exception) {
+                    Toast.makeText(activity, "오류가 발생했습니다. 다시 시도해주세요.", Toast.LENGTH_SHORT).show()
                 }
             }
         }
     }
 
-//    이미지 리사이클러뷰와 어댑터 연결 작업
+    //    이미지 리사이클러뷰와 어댑터 연결 작업
     fun initImageRecycler() {
         imageAdapter = MultiImageAdapter(requireContext(), requireFragmentManager())
         imageRecyclerView = binding.addImageRecycler
@@ -140,7 +131,7 @@ class AddFragment : Fragment() {
         imageAdapter.notifyDataSetChanged()
     }
 
-//    갤러리에서 이미지 선택 후 동작
+    //    갤러리에서 이미지 선택 후 동작
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 

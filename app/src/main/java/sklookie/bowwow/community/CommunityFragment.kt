@@ -10,10 +10,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.gms.tasks.Tasks
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.*
 import sklookie.bowwow.LoginActivity
 import sklookie.bowwow.R
 import sklookie.bowwow.dao.CommunityDAO
@@ -74,10 +75,19 @@ class CommunityFragment : Fragment(), OnCommunityRecylerItemClick {
         }
 
         // 파이어베이스에서 게시글 전체 불러오기
-        dao.getPosts { posts ->
-            if (!posts.isNullOrEmpty()) {
-                this.posts = posts as MutableList<Post>
+        lifecycleScope.launch {
+            posts = withContext(Dispatchers.IO) {
+                dao.getAllPosts()!!
             }
+
+            val userNameJobs = posts.map { post ->
+                async(Dispatchers.IO) {
+                    post.uname = dao.getUserNameByUid(post.uid!!)
+                }
+            }
+
+            // 모든 게시글의 사용자 이름을 가져올 때까지 대기
+            userNameJobs.awaitAll()
 
             initRecycler()
 
@@ -90,22 +100,12 @@ class CommunityFragment : Fragment(), OnCommunityRecylerItemClick {
 
         // 게시글 날짜 순으로 정렬
         binding.sortByDateBtn.setOnClickListener {
-            dao.getPosts { posts ->
-                if (!posts.isNullOrEmpty()) {
-                    this.posts = posts as MutableList<Post>
-                    sortingByDate()
-                }
-            }
+            sortingByDate()
         }
 
         // 게시글 조회수 순으로 정렬
         binding.sortByViewBtn.setOnClickListener {
-            dao.getPosts { posts ->
-                if (!posts.isNullOrEmpty()) {
-                    this.posts = posts as MutableList<Post>
-                    sortingByViews()
-                }
-            }
+            sortingByViews()
         }
 
         // 게시글 검색 버튼 클릭 리스너 구현
@@ -121,24 +121,30 @@ class CommunityFragment : Fragment(), OnCommunityRecylerItemClick {
 
         // 당겨서 새로고침 구현 (게시글 전부 다시 가져오기)
         binding.swiper.setOnRefreshListener {
-            dao.getPosts { posts ->
-                if (!posts.isNullOrEmpty()) {
-                    this.posts = posts as MutableList<Post>
+            lifecycleScope.launch {
+                posts = withContext(Dispatchers.IO) {
+                    dao.getAllPosts()!!
+                }
 
-                    if (sortedByView) {
-                        sortingByViews()
-                    } else {
-                        sortingByDate()
+                val userNameJobs = posts.map { post ->
+                    async(Dispatchers.IO) {
+                        post.uname = dao.getUserNameByUid(post.uid!!)
                     }
+                }
 
-                    adapter!!.updateDatas(this.posts)
-                    adapter!!.notifyDataSetChanged()
+                // 모든 게시글의 사용자 이름을 가져올 때까지 대기
+                userNameJobs.awaitAll()
+
+                initRecycler()
+
+                if (sortedByView) {
+                    sortingByViews()
                 } else {
-                    this.posts = mutableListOf<Post>()
-                    adapter!!.updateDatas(this.posts)
-                    adapter!!.notifyDataSetChanged()
+                    sortingByDate()
                 }
             }
+
+            adapter?.notifyDataSetChanged()
 
             binding.swiper.isRefreshing = false
         }

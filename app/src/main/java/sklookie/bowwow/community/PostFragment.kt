@@ -13,14 +13,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.net.toUri
 import androidx.core.view.isGone
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.gms.tasks.Task
-import com.google.android.gms.tasks.Tasks
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.storage.FirebaseStorage
-import kotlinx.coroutines.GlobalScope
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
 import sklookie.bowwow.R
 import sklookie.bowwow.dao.CommunityDAO
 import sklookie.bowwow.databinding.FragmentPostBinding
@@ -73,58 +70,56 @@ class PostFragment : Fragment(), OnCommunityRecylerItemClick {
         if (arguments != null) {
             pid = arguments.getString("pid", "")
 
-            // pid를 통해 게시글 가져오기
-            dao.getPostById(pid) { post ->
-                if (post != null) {
-                    this.post = post
+            lifecycleScope.launch {
+                post = withContext(Dispatchers.IO) {
+                    dao.updateViews(pid)
+                    dao.getPostById(pid)
+                }
 
-                    Log.d("PostFragment", "post data : ${post}, pid : ${pid}")
+                val userNameJob = async(Dispatchers.IO) {
+                    post?.uname = dao.getUserNameByUid(post?.uid!!)
+                    Log.d(TAG, "userName : ${post?.uname}")
+                }
 
-                    val auth = FirebaseAuth.getInstance()
-                    if (auth.uid.isNullOrEmpty()) {
+                // 모든 게시글의 사용자 이름을 가져올 때까지 대기
+                userNameJob.await()
+
+                if (post?.images != null) {
+                    images = MutableList(post?.images!!.size) {Uri.EMPTY}
+
+                    post?.images!!.forEachIndexed() { index, image ->
+                        images[index] = post?.images!![index].toUri()
+                        Log.d(TAG, "onViewCreated : ${images[index]}")
+                    }
+                } else {
+                    images = mutableListOf()
+                }
+                initImageRecycler()
+
+                if (!post?.comments.isNullOrEmpty()) {
+                    comments = post?.comments as ArrayList<Comment>
+                    comments?.sortBy { it.date }
+                }
+
+                comments.forEach { comment ->
+                    comment.uname = dao.getUserNameByUid(comment.uid!!)
+                }
+                initCommentRecycler()
+
+                val auth = FirebaseAuth.getInstance()
+                if (auth.uid.isNullOrEmpty()) {
+                    binding.updateText.isGone = true
+                    binding.deleteText.isGone = true
+                }
+
+                if (!auth.uid.isNullOrEmpty()) {
+                    if (!auth.uid.equals(post?.uid)) {
                         binding.updateText.isGone = true
                         binding.deleteText.isGone = true
                     }
-
-                    if (!auth.uid.isNullOrEmpty()) {
-                        if (!auth.uid.equals(post?.uid)) {
-                            binding.updateText.isGone = true
-                            binding.deleteText.isGone = true
-                        }
-                    }
-
-                    dao.updateViews(pid, post.views!!.toInt())
-                    val updatedViews = post.views!!.toInt() + 1
-                    post.views = updatedViews.toString()
-
-                    // 이미지 내용 images 변수에 넣기 (댓글 리사이클러뷰에 사용하기 위함)
-                    if (post?.images != null) {
-                        images = MutableList(post?.images!!.size) {Uri.EMPTY}
-
-                        post?.images!!.forEachIndexed() { index, image ->
-                            images[index] = post?.images!![index].toUri()
-                            Log.d(TAG, "onViewCreated : ${images[index]}")
-                        }
-                    } else {
-                        images = mutableListOf()
-                    }
-                    initImageRecycler()
-
-                    // 댓글 내용 comments 변수에 넣기 (댓글 리사이클러뷰에 사용하기 위함)
-                    if (!post?.comments.isNullOrEmpty()) {
-                        comments = post?.comments as ArrayList<Comment>
-                        comments?.sortBy { it.date }
-                    }
-                    initCommentRecycler()
-
-                    setView()
-                } else {
-                    Toast.makeText(requireContext(), "게시글이 존재하지 않습니다.", Toast.LENGTH_SHORT).show()
-
-                    val fragmentManager = requireActivity().supportFragmentManager
-                    fragmentManager.popBackStack()
                 }
 
+                setView()
             }
         }
 
@@ -135,13 +130,8 @@ class PostFragment : Fragment(), OnCommunityRecylerItemClick {
             val pref : SharedPreferences = requireActivity().getSharedPreferences("save_state", 0)
             val id = pref.getString("idValue", null)
 
-            var googleInfo = GoogleInfo()
-            dao.getGoogleInfoByID(id!!) {
-                if (googleInfo != null) {
-                    googleInfo = it
 
                     val uid = FirebaseAuth.getInstance().uid.toString()
-                    val uname = "${googleInfo.familyName}${googleInfo.givenName}"
 
                     if (!comment.text.isNullOrEmpty()) {
                         lateinit var newComment: Comment
@@ -150,7 +140,6 @@ class PostFragment : Fragment(), OnCommunityRecylerItemClick {
                                 pid,
                                 comment.text.toString(),
                                 uid,
-                                uname,
                                 object : CommunityDAO.AddCommentCallback {
                                     override fun onAddCommentComplete() {
                                         updateDataAndView()
@@ -165,11 +154,8 @@ class PostFragment : Fragment(), OnCommunityRecylerItemClick {
                     } else {
                         Toast.makeText(requireContext(), "댓글을 입력하세요.", Toast.LENGTH_SHORT).show()
                     }
-                } else {
-                    Log.d(TAG, "Failed to get googleInfo")
-                    Toast.makeText(requireContext(), "로그인이 제대로 되어 있는지 확인해주시기 바랍니다.", Toast.LENGTH_SHORT).show()
-                }
-            }
+
+
 
 
         }
@@ -261,43 +247,47 @@ class PostFragment : Fragment(), OnCommunityRecylerItemClick {
 //    게시글 내용을 업데이트한 후 화면에 반영
     fun updateDataAndView() {
         Log.d(TAG, "updateDataAndView !!")
-        dao.getPostById(pid) {
-            if (it != null) {
-                post = it
+        lifecycleScope.launch {
+            post = withContext(Dispatchers.IO) {
+                dao.updateViews(pid)
+                dao.getPostById(pid)
+            }
 
-                // 이미지 내용 images 변수에 넣기 (댓글 리사이클러뷰에 사용하기 위함)
-                if (post?.images != null) {
-                    images = MutableList(post?.images!!.size) {Uri.EMPTY}
+            post?.uname = withContext(Dispatchers.IO) {
+                post?.uid?.let { dao.getUserNameByUid(it) }
+            }
 
-                    post?.images!!.forEachIndexed() { index, image ->
-                        images[index] = post?.images!![index].toUri()
-                    }
-                } else {
-                    images = mutableListOf()
+            if (post?.images != null) {
+                images = MutableList(post?.images!!.size) {Uri.EMPTY}
+
+                post?.images!!.forEachIndexed() { index, image ->
+                    images[index] = post?.images!![index].toUri()
+                    Log.d(TAG, "onViewCreated : ${images[index]}")
                 }
-
-                imageAdapter.datas = images
-                imageAdapter.notifyDataSetChanged()
-
-                // 댓글 내용 comments 변수에 넣기 (댓글 리사이클러뷰에 사용하기 위함)
-                if (!post?.comments.isNullOrEmpty()) {
-                    comments = post?.comments as ArrayList<Comment>
-                    comments?.sortBy { it.date }
-                }
-
-                commentAdapter.datas = comments
-                commentAdapter.notifyDataSetChanged()
-
-                setView()
             } else {
-                Toast.makeText(
-                    requireContext(),
-                    "게시글이 존재하지 않습니다.",
-                    Toast.LENGTH_SHORT
-                ).show()
+                images = mutableListOf()
+            }
+            initImageRecycler()
 
-                val fragmentManager = requireActivity().supportFragmentManager
-                fragmentManager.popBackStack()
+            if (!post?.comments.isNullOrEmpty()) {
+                comments = post?.comments as ArrayList<Comment>
+                comments?.sortBy { it.date }
+            }
+            initCommentRecycler()
+
+            setView()
+
+            val auth = FirebaseAuth.getInstance()
+            if (auth.uid.isNullOrEmpty()) {
+                binding.updateText.isGone = true
+                binding.deleteText.isGone = true
+            }
+
+            if (!auth.uid.isNullOrEmpty()) {
+                if (!auth.uid.equals(post?.uid)) {
+                    binding.updateText.isGone = true
+                    binding.deleteText.isGone = true
+                }
             }
         }
     }

@@ -14,17 +14,16 @@ data class Post (
     var uname: String?,
     var views: String?,
     var images: MutableList<String>?,
-    var comments: List<Comment>?
+    var comments: MutableList<Comment>?
     ) : Serializable {
 
-    constructor() : this("", "", "", "", "","", "0", null, null)
+    constructor() : this("", "", "", "", "", "",  "0", null, null)
 
-    constructor(title: String, content: String?, date: String?, uid: String?, uname: String?) : this("", title, content, date, uid, uname, "0", null, null) {
+    constructor(title: String, content: String?, date: String?, uid: String?) : this("", title, content, date, uid, "", "0", null, null) {
         this.title = title
         this.content = content
         this.date = date
         this.uid = uid
-        this.uname = uname
     }
 
     @Exclude

@@ -9,31 +9,33 @@ import com.google.firebase.storage.FirebaseStorage
 import com.google.firebase.storage.StorageReference
 import com.google.firebase.storage.StorageTask
 import com.google.firebase.storage.UploadTask
+import kotlinx.coroutines.*
+import kotlinx.coroutines.tasks.await
 import sklookie.bowwow.community.EditFragment
 import sklookie.bowwow.dto.Comment
-import sklookie.bowwow.dto.GoogleInfo
 import sklookie.bowwow.dto.Post
 import java.time.Instant
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import kotlin.collections.HashMap
+import kotlin.coroutines.resume
+import kotlin.coroutines.suspendCoroutine
 
 class CommunityDAO {
     val TAG="CommunityDAO"
 
-    val realtimeDB: FirebaseDatabase = FirebaseDatabase.getInstance()
+    private val db: FirebaseDatabase = FirebaseDatabase.getInstance()
+    private val postDbRef: DatabaseReference = db.getReference("post")
+    private val userInfoDbRef = db.getReference("userInfo")
 
-    val postDBReference: DatabaseReference = realtimeDB.getReference("post")
-    val userInfoDB = realtimeDB.getReference("userInfo")
-
-    val storage: FirebaseStorage = FirebaseStorage.getInstance()
-    val postStorageRefence: StorageReference = storage.getReference("post")
+    private val storage: FirebaseStorage = FirebaseStorage.getInstance()
+    private val postStorageRefence: StorageReference = storage.getReference("post")
 
     val date = Instant.ofEpochMilli(System.currentTimeMillis())
         .atOffset(ZoneOffset.ofHours(9))
         .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
 
-//    파이어베이스 이미지 저장 메소드
+    //    파이어베이스 이미지 저장 메소드
     fun addImage(imgRef: StorageReference, uri: Uri): StorageTask<UploadTask.TaskSnapshot> {
         return imgRef.putFile(uri)
             .addOnSuccessListener {
@@ -48,9 +50,10 @@ class CommunityDAO {
         fun onAddPostCompleted()
     }
 
-//        게시글 생성 메소드
-    fun addPost(title: String, content: String, uid: String?, uname: String?, imageUris: MutableList<Uri>, callback: AddPostCallback) {
-       val postId: String? = postDBReference.push().key
+    //        게시글 생성 메소드
+    fun addPost(title: String, content: String, uid: String?, imageUris: MutableList<Uri>, callback: AddPostCallback) {
+        val postId: String? = postDbRef.push().key
+        Log.d(TAG, "addPost - postId : ${postId}")
 
         val post = Post()
         post.pid = postId
@@ -58,10 +61,7 @@ class CommunityDAO {
         post.content = content
         post.date = date
         post.uid = uid
-        post.uname = uname
         post.views = "0"
-
-        Log.d(TAG, "addPost -> uname : ${uname}")
 
         val imageList = mutableListOf<String>()
 
@@ -98,8 +98,8 @@ class CommunityDAO {
                         Log.d(TAG, "post.images : ${it}")
                     }
 
-                    val posted = postId?.let { postDBReference.child(it).setValue(post) }
-                    postId?.let { postDBReference.child(it).child("comments") }
+                    val posted = postId?.let { postDbRef.child(it).setValue(post) }
+                    postId?.let { postDbRef.child(it).child("comments") }
                     if (posted == null) {
                         Log.w(TAG, "게시물 저장에 실패했습니다.");
                     }
@@ -107,6 +107,14 @@ class CommunityDAO {
                     callback.onAddPostCompleted()
                 }
             }
+        } else {
+            val posted = postId?.let { postDbRef.child(it).setValue(post) }
+            postId?.let { postDbRef.child(it).child("comments") }
+            if (posted == null) {
+                Log.w(TAG, "게시물 저장에 실패했습니다.");
+            }
+
+            callback.onAddPostCompleted()
         }
     }
 
@@ -114,7 +122,7 @@ class CommunityDAO {
         fun onEditPostCompleted()
     }
 
-//        게시글 수정 메소드
+    //        게시글 수정 메소드
     fun editPost(pid: String, title: String, content: String, imageUris: MutableList<Uri>, callback: EditPostCallback) {
         val deleteImageTasks = mutableListOf<Task<*>>()
 
@@ -190,7 +198,7 @@ class CommunityDAO {
                 }
             }
         } else {
-            postDBReference.child(pid).child("images").removeValue()        // 이미지가 없을 때 실시간 데이터베이스에 있는 이미지 DB를 삭제
+            postDbRef.child(pid).child("images").removeValue()        // 이미지가 없을 때 실시간 데이터베이스에 있는 이미지 DB를 삭제
 
             val updatePostTasks = updatePostData(pid, titleUpdate, contentUpdate, imageUpdate, dateUpdate)
             Tasks.whenAllComplete(updatePostTasks).addOnSuccessListener {
@@ -199,14 +207,14 @@ class CommunityDAO {
         }
     }
 
-//    파이어베이스 게시글 update 반영 메소드
+    //    파이어베이스 게시글 update 반영 메소드
     fun updatePostData(pid: String, titleUpdate: HashMap<String, Any>, contentUpdate: HashMap<String, Any>, imageUpdate: HashMap<String, Any>, dateUpdate: HashMap<String, Any>) : MutableList<Task<*>> {
         val updatePostTasks = mutableListOf<Task<*>>()
 
-        val titleTask = postDBReference.child(pid).updateChildren(titleUpdate)
-        val contentTask = postDBReference.child(pid).updateChildren(contentUpdate)
-        val imageTask = postDBReference.child(pid).updateChildren(imageUpdate)
-        val dateTask = postDBReference.child(pid).updateChildren(dateUpdate)
+        val titleTask = postDbRef.child(pid).updateChildren(titleUpdate)
+        val contentTask = postDbRef.child(pid).updateChildren(contentUpdate)
+        val imageTask = postDbRef.child(pid).updateChildren(imageUpdate)
+        val dateTask = postDbRef.child(pid).updateChildren(dateUpdate)
 
         updatePostTasks.add(titleTask)
         updatePostTasks.add(contentTask)
@@ -221,7 +229,7 @@ class CommunityDAO {
         fun onDeletePostComplete()
     }
 
-//        게시글 삭제 메소드
+    //        게시글 삭제 메소드
     fun deletePost(pid: String, images: MutableList<String>?, callback: DeletePostCallback) {
         if (images != null) {
             images.forEach { uri ->
@@ -236,32 +244,63 @@ class CommunityDAO {
             }
         }
 
-        val deleteTask = postDBReference.child(pid).removeValue()
+        val deleteTask = postDbRef.child(pid).removeValue()
         Tasks.whenAllComplete(deleteTask).addOnSuccessListener {
             callback.onDeletePostComplete()
         }
-   }
+    }
 
-//        조회수 업데이트 메소드
-    fun updateViews(pid: String, views: Int) {
-        var v = views
+    //        조회수 업데이트 메소드
+    suspend fun updateViews(pid: String) {
+        try {
+            // 해당 게시물을 가져옵니다.
+            val postReference = postDbRef.child(pid)
+            val dataSnapshot = postReference.get().await()
 
-        val viewsUpdate: HashMap<String, Any> = HashMap()
+            if (dataSnapshot.exists()) {
+                // 게시물이 존재할 때만 업데이트를 진행합니다.
+                val postMap: Map<String, Any?> =
+                    dataSnapshot.value as? Map<String, Any?> ?: emptyMap()
+                val post = Post(
+                    pid = pid,
+                    title = postMap["title"] as? String,
+                    content = postMap["content"] as? String,
+                    date = postMap["date"] as? String,
+                    uid = postMap["uid"] as? String,
+                    uname = "",
+                    views = postMap["views"] as? String,
+                    images = (postMap["images"] as? MutableList<String>) ?: null,
+                    comments = convertComments(postMap["comments"])
+                )
+                if (post != null) {
+                    val currentViews = post.views?.toInt() ?: 0
+                    val updatedViews = currentViews + 1
 
-        viewsUpdate["views"] = (++v).toString()
+                    // 업데이트할 데이터를 만듭니다.
+                    val viewsUpdate: HashMap<String, Any> = HashMap()
+                    viewsUpdate["views"] = updatedViews.toString()
 
-        val result = postDBReference.child(pid).updateChildren(viewsUpdate)
-        result.addOnSuccessListener {
-            Log.d(TAG, "update views success! ${it.toString()}")
+                    // 업데이트를 수행합니다.
+                    val result = postReference.updateChildren(viewsUpdate).await()
+                    Log.d(TAG, "update views success! $result")
+                } else {
+                    Log.e(TAG, "Failed to parse post data")
+                }
+            } else {
+                Log.e(TAG, "Post not found")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "update views failed", e)
         }
     }
 
+
     interface AddCommentCallback {
-         fun onAddCommentComplete()
+        fun onAddCommentComplete()
     }
 
-//        댓글 작성 메소드
-    fun addComment(pid: String, comment: String, uid: String, uname: String, callback: AddCommentCallback): Comment {
+    //        댓글 작성 메소드
+    fun addComment(pid: String, comment: String, uid: String, callback: AddCommentCallback): Comment {
         val commentHashMap = HashMap<String, Any>()
 
         val date = Instant.ofEpochMilli(System.currentTimeMillis())
@@ -274,12 +313,12 @@ class CommunityDAO {
         commentHashMap.put("uid", uid)
 
         val commentKey =
-                postDBReference.child(pid).child("comments").push().key
-        val comment = Comment(pid, commentKey, comment, date, uid, uname)
+            postDbRef.child(pid).child("comments").push().key
+        val comment = Comment(pid, commentKey, comment, date, uid, "")  // uname은 저장되지 않음
 
 
         if (commentKey != null) {
-            val task = postDBReference.child(pid).child("comments").child(commentKey)
+            val task = postDbRef.child(pid).child("comments").child(commentKey)
                 .setValue(comment)
 
             Tasks.whenAllComplete(task).addOnSuccessListener {
@@ -296,61 +335,50 @@ class CommunityDAO {
         fun onDeleteCommentComplete()
     }
 
-//        댓글 삭제 메소드
+    //        댓글 삭제 메소드
     fun deleteComment(pid: String, cid: String, callback : DeleteCommentCallback) {
-       val task = postDBReference.child(pid).child("comments").child(cid).removeValue()
+        val task = postDbRef.child(pid).child("comments").child(cid).removeValue()
         Tasks.whenAllComplete(task).addOnSuccessListener {
             callback.onDeleteCommentComplete()
         }
     }
 
-//    게시글 반환 메소드
-    fun getPosts(callback: (List<Post>?) -> Unit) {
+    //    게시글 반환 메소드
+    suspend fun getAllPosts(): MutableList<Post>? = suspendCoroutine { continuation ->
         val posts = mutableListOf<Post>()
 
-        try {
-            postDBReference.get().addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    val dataSnapshot: DataSnapshot? = task.result
-                    if (dataSnapshot != null && dataSnapshot.exists()) {
-                        for (postSnapshot in dataSnapshot.children) {
-                            val postMap: Map<String, Any?> =
-                                postSnapshot.value as? Map<String, Any?>
-                                    ?: continue
-                            val post = Post(
-                                pid = postSnapshot.key,
-                                title = postMap["title"] as? String,
-                                content = postMap["content"] as? String,
-                                date = postMap["date"] as? String,
-                                uid = postMap["uid"] as? String,
-                                uname = postMap["uname"] as? String,
-                                views = postMap["views"] as? String,
-                                images = (postMap["images"] as? MutableList<String>)
-                                    ?: null,
-                                comments = convertComments(postMap["comments"])
-                            )
-                            posts?.add(post)
-                        }
-                        callback(posts)
-                    } else {
-                        Log.d(TAG, "게시글이 없습니다.")
-                        callback(null)
+        postDbRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                for (childSnapshot in snapshot.children) {
+                    val postMap = childSnapshot.value as? Map<String, Any?>
+                    if (postMap != null) {
+                        val post = Post(
+                            pid = childSnapshot.key,
+                            title = postMap["title"] as? String,
+                            content = postMap["content"] as? String,
+                            date = postMap["date"] as? String,
+                            uid = postMap["uid"] as? String,
+                            uname = "",
+                            views = postMap["views"] as? String,
+                            images = postMap["images"] as? MutableList<String>,
+                            comments = convertComments(postMap["comments"])
+                        )
+                        posts.add(post)
                     }
-                } else {
-                    val error: String? = task.exception?.toString()
-                    Log.d(TAG, "게시글 읽기 실패: $error")
-                    callback(null)
                 }
+                continuation.resume(posts)
             }
-        } catch (e: Exception) {
-            Log.e(TAG, "게시글 읽기 오류", e)
-            callback(null)
-        }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e(TAG, error.toString())
+            }
+        })
     }
 
-//    ID 값으로 게시글 반환 메소드
-    fun getPostById(pid: String, callback: (Post?) -> Unit) {
-        val postReference = postDBReference.child(pid)
+
+    //    ID 값으로 게시글 반환 메소드
+    suspend fun getPostById(pid: String): Post? = suspendCoroutine { continuation ->
+        val postReference = postDbRef.child(pid)
 
         try {
             postReference.get().addOnCompleteListener { task ->
@@ -364,25 +392,25 @@ class CommunityDAO {
                         content = postMap["content"] as? String,
                         date = postMap["date"] as? String,
                         uid = postMap["uid"] as? String,
-                        uname = postMap["uname"] as? String,
+                        uname = "",
                         views = postMap["views"] as? String,
                         images = (postMap["images"] as? MutableList<String>) ?: null,
                         comments = convertComments(postMap["comments"])
                     )
-                    callback(post)
+                    continuation.resume(post)
                 } else {
                     val error: String? = task.exception?.toString()
                     Log.w(TAG, "게시물 불러오기 오류: $error")
-                    callback(null)
+                    continuation.resume(null)
                 }
             }
         } catch (e: Exception) {
             Log.w(TAG, "게시물 불러오기 오류", e)
-            callback(null)
+            continuation.resume(null)
         }
     }
 
-//   HashMap을 Comment 객체로 치환
+    //   HashMap을 Comment 객체로 치환
     private fun convertComments(commentsMap: Any?): MutableList<Comment> {
         if (commentsMap is Map<*, *>) {
             val comments = mutableListOf<Comment>()
@@ -396,7 +424,7 @@ class CommunityDAO {
                         date = it["date"] as? String,
                         pid = it["pid"] as? String,
                         uid = it["uid"] as? String,
-                        uname = it["uname"] as? String
+                        uname = ""
                     )
                 }
                 Log.d(TAG, "comment: ${comment}")
@@ -407,29 +435,67 @@ class CommunityDAO {
         return mutableListOf()
     }
 
-//    ID 값을 통한 GoogleInfo 반환 메소드
-    fun getGoogleInfoByID(id: String, callback: (GoogleInfo) -> Unit) {
-        userInfoDB.child(id).child("googleInfo").get().addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                val dataSnapshot = task.result
+    //    ID 값을 통한 GoogleInfo 반환 메소드
+    suspend fun getUserNameByUid(uid: String): String = suspendCancellableCoroutine { continuation ->
+        val query = userInfoDbRef.orderByChild("uid").equalTo(uid)
 
-                val familyName = dataSnapshot.child("familyName").getValue(String::class.java)
-                val givenName = dataSnapshot.child("givenName").getValue(String::class.java)
-                val uid = dataSnapshot.child("uid").getValue(String::class.java)
+        query.addListenerForSingleValueEvent(object: ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val userNames = mutableListOf<String>()
 
-                Log.d(TAG, "googleInfo: $uid, $familyName, $givenName")
+                for (childSnapshot in snapshot.children) {
+                    val userInfo = childSnapshot.child("userName").getValue(String::class.java)
+                    if (userInfo != null) {
+                        userNames.add(userInfo)
+                    }
+                }
 
-                val googleInfo = GoogleInfo()
-                googleInfo.familyName = familyName.toString()
-                googleInfo.givenName = givenName.toString()
-                googleInfo.uid = uid.toString()
+                val result = if (userNames.isEmpty()) {
+                    "사용자 없음"
+                } else {
+                    userNames[0]
+                }
 
-                Log.d(TAG, "return googleInfo: ${googleInfo.uid}, ${googleInfo.familyName}, ${googleInfo.givenName}")
-
-                callback(googleInfo)
-            } else {
-                Log.d(TAG, "구글 계정 정보 불러오기 실패")
+                continuation.resume(result)
             }
-        }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e(TAG, error.toString())
+            }
+        })
+    }
+
+    suspend fun getMyPosts(uid: String): List<Post> = suspendCancellableCoroutine { continuation ->
+        val query = postDbRef.orderByChild("uid").equalTo(uid)
+
+        query.addListenerForSingleValueEvent(object: ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val posts = mutableListOf<Post>()
+
+                for (childSnapshot in snapshot.children) {
+                    val postMap = childSnapshot.value as? Map<String, Any?>
+                    if (postMap != null) {
+                        val post = Post(
+                            pid = childSnapshot.key,
+                            title = postMap["title"] as? String,
+                            content = postMap["content"] as? String,
+                            date = postMap["date"] as? String,
+                            uid = postMap["uid"] as? String,
+                            uname = "",
+                            views = postMap["views"] as? String,
+                            images = postMap["images"] as? MutableList<String>,
+                            comments = convertComments(postMap["comments"])
+                        )
+                        posts.add(post)
+                    }
+                }
+
+                continuation.resume(posts)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e(TAG, error.toString())
+            }
+        })
     }
 }

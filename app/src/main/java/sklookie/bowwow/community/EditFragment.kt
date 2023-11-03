@@ -12,11 +12,15 @@ import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.tasks.Task
 import com.google.android.gms.tasks.Tasks
 import com.google.firebase.storage.FirebaseStorage
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import sklookie.bowwow.dao.CommunityDAO
 import sklookie.bowwow.databinding.FragmentEditBinding
 import sklookie.bowwow.dto.Post
@@ -70,28 +74,24 @@ class EditFragment : Fragment() {
         }
 
         // pid를 통해 게시글 불러오기
-        dao.getPostById(pid) { post ->
-            if (post != null) {
-                this.post = post
-
-                // 이미지 내용 images 변수에 넣기 (댓글 리사이클러뷰에 사용하기 위함)
-                if (post?.images != null) {
-                    images = MutableList(post?.images!!.size) {Uri.EMPTY}
-
-                    post?.images!!.forEachIndexed() { index, image ->
-                        images[index] = post?.images!![index].toUri()
-                    }
-                } else {
-                    images = mutableListOf()
-                }
-
-                initImageRecycler()
-
-                setView()
-            } else {
-                Toast.makeText(requireContext(), "게시글이 존재하지 않습니다.", Toast.LENGTH_SHORT).show()
-                fragmentManager?.popBackStack()
+        lifecycleScope.launch {
+            post = withContext(Dispatchers.IO) {
+                dao.getPostById(pid)!!
             }
+
+            if (post?.images != null) {
+                images = MutableList(post?.images!!.size) {Uri.EMPTY}
+
+                post?.images!!.forEachIndexed() { index, image ->
+                    images[index] = post?.images!![index].toUri()
+                }
+            } else {
+                images = mutableListOf()
+            }
+
+            initImageRecycler()
+
+            setView()
         }
 
 

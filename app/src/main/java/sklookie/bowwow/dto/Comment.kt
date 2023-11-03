@@ -22,6 +22,6 @@ data class Comment (
 //    }
 
     override fun toString(): String {
-        return "cid: ${cid}, comment: ${comment}, date: ${date}, uid: ${uid}, uname: ${uname}"
+        return "cid: ${cid}, comment: ${comment}, date: ${date}, uid: ${uid}"
     }
 }
