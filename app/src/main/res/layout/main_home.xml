@@ -39,7 +39,7 @@
             android:textStyle="bold" />
 
         <ImageView
-            android:id="@+id/profie"
+            android:id="@+id/profile"
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:layout_marginLeft="10dp"

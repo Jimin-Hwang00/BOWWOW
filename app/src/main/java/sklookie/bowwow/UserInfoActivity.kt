@@ -1,6 +1,7 @@
 package sklookie.bowwow
 
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -26,7 +27,8 @@ class UserInfoActivity : AppCompatActivity() {
 
 
         val database = Firebase.database
-        val myRef = database.getReference("userInfo").push()
+        val myRef = database.getReference("userInfo")
+        var id : String = intent.getStringExtra("id").toString()
         var userInfo : UserInfoModel = UserInfoModel()
 
         //진행상황 30%설정
@@ -39,12 +41,25 @@ class UserInfoActivity : AppCompatActivity() {
         //유저이름, 장치정보 저장
         binding.nextBtn.setOnClickListener{
             val intent = Intent(this, DogInfoActivity::class.java)
+
+            val pref : SharedPreferences = getSharedPreferences("save_state", 0)
+            val editor : SharedPreferences.Editor = pref.edit()
             userInfo.userName = binding.userName.text.toString()
             userInfo.userDevice = spinner.selectedItem.toString()
-            myRef.child("id").setValue(myRef.key)
-            myRef.child("userDevice").setValue(userInfo.userDevice)
-            myRef.child("userName").setValue(userInfo.userName)
-            intent.putExtra("id", myRef.key)
+            editor.putString("nameValue", userInfo.userName).commit()
+
+            if (id.equals("null") || id.isNullOrEmpty()) {      // LoginActivity에서 구글 로그인이 아직 안 된 경우
+                val myNewRef = myRef.push()
+                id = myNewRef.key.toString()
+
+                myNewRef.child("userDevice").setValue(userInfo.userDevice)
+                myNewRef.child("userName").setValue(userInfo.userName)
+            } else {                                            // LoginActivity에서 구글 로그인이 완료되어 userInfo에 key 값이 있는 경우
+                myRef.child(id).child("userDevice").setValue(userInfo.userDevice)
+                myRef.child(id).child("userName").setValue(userInfo.userName)
+            }
+
+            intent.putExtra("id", id)
             startActivity(intent)
         }
         binding.backBtn.setOnClickListener{

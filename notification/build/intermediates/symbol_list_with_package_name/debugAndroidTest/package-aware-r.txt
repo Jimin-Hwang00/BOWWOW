@@ -1,3 +1,0 @@
-sklookie.bowwow.notification.test
-style WhiteBackgroundDialogTheme
-style WhiteBackgroundTheme

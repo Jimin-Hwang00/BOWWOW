@@ -1,6 +1,7 @@
 package sklookie.bowwow
 
 import android.content.Intent
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -35,7 +36,11 @@ class BellActivity : AppCompatActivity() {
         //완료버튼 : 모든 유저정보값이 들어간 경우 가능
         binding.nextBtn.setOnClickListener{
             val intent = Intent(this, CompleteActivity::class.java)
+            val pref : SharedPreferences = getSharedPreferences("save_state", 0)
+            val editor : SharedPreferences.Editor = pref.edit()
             userInfo.bell = spinner.selectedItem.toString()
+
+            editor.putString("bellValue", userInfo.bell).commit()
             myRef.child(id).child("bell").setValue(userInfo.bell)
             intent.putExtra("id", id)
             startActivity(intent)
