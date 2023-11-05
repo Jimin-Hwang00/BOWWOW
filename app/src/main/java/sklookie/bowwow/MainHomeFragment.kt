@@ -51,10 +51,5 @@ class MainHomeFragment : Fragment() {
         val pref: SharedPreferences = requireContext().getSharedPreferences("save_state", 0)
         binding.userName.setText("${pref.getString("nameValue", null)}님")
         binding.bellText.setText("${pref.getString("dogValue", null)}이의 \n벨훈련")
-
-        binding.profile.setOnClickListener {
-            val intent = Intent(requireContext(), MyInfoActivity::class.java)
-            startActivity(intent)
-        }
     }
 }

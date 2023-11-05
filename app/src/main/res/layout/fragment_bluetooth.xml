@@ -4,8 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
-
+    tools:context=".bluetooth.BluetoothFragment">
     <ImageView
         android:id="@+id/logo"
         android:layout_width="156dp"
@@ -58,5 +57,4 @@
         android:layout_marginTop="316dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
-
 </androidx.constraintlayout.widget.ConstraintLayout>

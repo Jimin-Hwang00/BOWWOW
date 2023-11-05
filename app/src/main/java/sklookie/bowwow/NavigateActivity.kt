@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.util.Log
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
+import sklookie.bowwow.bluetooth.BluetoothFragment
 import sklookie.bowwow.community.AddFragment
 import sklookie.bowwow.community.CommunityFragment
 import sklookie.bowwow.community.EditFragment
@@ -32,7 +33,7 @@ class NavigateActivity : AppCompatActivity() {
 
         binding.navigationView.run { setOnNavigationItemSelectedListener {
             when (it.itemId) {
-                R.id.menu_bottom_menu -> {
+                R.id.home_bottom_menu -> {
                     val fragment = MainHomeFragment()
                     val bundle = Bundle()
                     bundle.putString("key", id.toString()) // 데이터 추가
@@ -45,10 +46,16 @@ class NavigateActivity : AppCompatActivity() {
                 R.id.community_bottom_menu -> {
                     supportFragmentManager.beginTransaction().replace(R.id.mainFrameLayout, CommunityFragment()).commit()
                 }
+                R.id.bluetooth_bottom_menu->{
+                    supportFragmentManager.beginTransaction().replace(R.id.mainFrameLayout, BluetoothFragment()).commit()
+                }
+                R.id.myInfo_bottom_menu->{
+                    supportFragmentManager.beginTransaction().replace(R.id.mainFrameLayout, MyInfoFragment()).commit()
+                }
             }
             true
         }
-            selectedItemId = R.id.menu_bottom_menu
+            selectedItemId = R.id.home_bottom_menu
         }
     }
 
