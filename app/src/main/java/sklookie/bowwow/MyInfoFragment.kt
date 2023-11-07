@@ -43,7 +43,7 @@ class MyInfoFragment : Fragment() {
 
         val pref: SharedPreferences = requireContext().getSharedPreferences("save_state", 0)
         val uName = pref.getString("nameValue", null).toString()
-        val device = pref.getString("deviceValue", null).toString()
+        val device = pref.getString("userDevice", null).toString()
         val bell = pref.getString("bellValue", null).toString()
         val dogName = pref.getString("dogValue", null).toString()
 
