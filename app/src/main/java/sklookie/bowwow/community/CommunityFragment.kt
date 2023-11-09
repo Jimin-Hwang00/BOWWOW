@@ -173,8 +173,8 @@ class CommunityFragment : Fragment(), OnCommunityRecylerItemClick {
         mainRecyclerView.layoutManager?.removeAllViews()
         adapter!!.notifyDataSetChanged()
 
-        binding.sortByDateBtn.setBackgroundColor(Color.parseColor("#2196F3"))
-        binding.sortByViewBtn.setBackgroundColor(Color.parseColor("#BDBEC3"))
+        binding.sortByDateBtn.setBackgroundColor(Color.parseColor("#6078F0"))
+        binding.sortByViewBtn.setBackgroundColor(Color.parseColor("#656770"))
     }
 
 //    조회수 순으로 게시글 정렬
@@ -187,8 +187,8 @@ class CommunityFragment : Fragment(), OnCommunityRecylerItemClick {
         mainRecyclerView.layoutManager?.removeAllViews()
         adapter!!.notifyDataSetChanged()
 
-        binding.sortByDateBtn.setBackgroundColor(Color.parseColor("#BDBEC3"))
-        binding.sortByViewBtn.setBackgroundColor(Color.parseColor("#2196F3"))
+        binding.sortByDateBtn.setBackgroundColor(Color.parseColor("#656770"))
+        binding.sortByViewBtn.setBackgroundColor(Color.parseColor("#6078F0"))
     }
 }
 
