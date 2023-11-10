@@ -1,94 +1,123 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity"
-    android:orientation="vertical"
-    android:gravity="center">
+    tools:context=".UserInfoActivity">
 
     <ProgressBar
         android:id="@+id/progressBar"
         style="?android:attr/progressBarStyleHorizontal"
-        android:layout_width="341dp"
-        android:scaleY="4"
-        android:layout_height="182dp"
-        android:layout_gravity="center"/>
+        android:layout_width="280dp"
+        android:layout_height="17dp"
+        android:background="@drawable/progress_bar_background"
+        android:progressDrawable="@drawable/curved_progress_bar"
+        app:layout_constraintBottom_toTopOf="@+id/appName"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.496"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.656" />
+
     <TextView
         android:id="@+id/appName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="148dp"
+        android:fontFamily="@font/gmarket_sans_ttf_bold"
         android:text="BOWWOW"
         android:textColor="@color/black"
         android:textSize="30sp"
-        android:textStyle="bold" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/text1"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="반려인의 성함을 입력해주세요"
-        android:textSize="15sp"
-        android:textStyle="bold" />
+        android:layout_marginTop="56dp"
+        android:fontFamily="@font/gmarket_sans_ttf_medium"
+        android:text="반려인의 성함을 입력해주세요."
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.373"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/appName" />
 
     <EditText
         android:id="@+id/userName"
-        android:layout_width="wrap_content"
-        android:width="250dp"
-        android:layout_height="wrap_content"
+        android:layout_width="268dp"
+        android:layout_height="39dp"
         android:layout_marginTop="20dp"
-        android:layout_marginBottom="20dp"
-        android:ems="10"
+        android:width="250dp"
         android:background="@drawable/name_edit"
+        android:ems="10"
+        android:fontFamily="@font/gmarket_sans_ttf_light"
+        android:hint=" 이름을 입력해주세요."
         android:inputType="textPersonName"
-        android:hint="이름을 입력해주세요."
-        />
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.454"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/text1" />
 
     <TextView
         android:id="@+id/text2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10sp"
+        android:layout_marginTop="36dp"
+        android:fontFamily="@font/gmarket_sans_ttf_medium"
         android:text="어떤 기기를 사용하시나요?"
-        android:textSize="15sp"
-        android:textStyle="bold" />
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.341"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/userName" />
 
     <Spinner
         android:id="@+id/spinner"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
         android:minWidth="200dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginBottom="20dp"
-        android:paddingVertical="10dp" />
+        android:paddingVertical="10dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.308"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/text2" />
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="horizontal">
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/nextBtn"
+        android:layout_width="155dp"
+        android:layout_height="40dp"
+        android:layout_marginEnd="2dp"
+        android:layout_marginBottom="232dp"
+        android:background="@drawable/button_style_1"
+        android:backgroundTint="#6078F0"
+        android:fontFamily="@font/gmarket_sans_ttf_bold"
+        android:text="다음"
+        android:textColor="@color/white"
+        android:textSize="17sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.44"
+        app:layout_constraintStart_toEndOf="@+id/backBtn" />
 
-        <Button
-            android:id="@+id/backBtn"
-            android:layout_width="155dp"
-            android:layout_height="40dp"
-            android:layout_marginStart="32dp"
-            android:layout_marginBottom="300dp"
-            android:text="이전"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            />
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/backBtn"
+        android:layout_width="155dp"
+        android:layout_height="40dp"
+        android:layout_marginStart="40dp"
+        android:layout_marginBottom="232dp"
+        android:background="@drawable/button_style_1"
+        android:fontFamily="@font/gmarket_sans_ttf_bold"
+        android:text="이전"
+        android:textColor="#6078F0"
+        android:textSize="17sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
-        <Button
-            android:id="@+id/nextBtn"
-            android:layout_width="155dp"
-            android:layout_height="40dp"
-            android:layout_marginStart="32dp"
-            android:layout_marginBottom="300dp"
-            android:text="다음"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
-
-    </LinearLayout>
-
-</LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

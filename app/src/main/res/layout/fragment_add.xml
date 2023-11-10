@@ -18,6 +18,7 @@
             android:layout_marginTop="24dp"
             android:background="@drawable/border"
             android:ellipsize="end"
+            android:fontFamily="@font/gmarket_sans_ttf_bold"
             android:hint="제목을 입력해주세요."
             android:padding="10dp"
             android:textColor="@android:color/black"
@@ -42,11 +43,18 @@
                     android:layout_width="match_parent"
                     android:layout_height="100dp">
 
-                    <Button
+                    <androidx.appcompat.widget.AppCompatButton
                         android:id="@+id/add_image_btn"
-                        android:layout_width="110dp"
-                        android:layout_height="50dp"
+                        android:layout_width="140dp"
+                        android:layout_height="30dp"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginEnd="16dp"
+                        android:background="@drawable/button_style_1"
+                        android:backgroundTint="#6078F0"
+                        android:fontFamily="@font/gmarket_sans_ttf_bold"
                         android:text="이미지 추가"
+                        android:textColor="@color/white"
+                        android:textSize="17sp"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
@@ -61,6 +69,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="@null"
+                    android:fontFamily="@font/gmarket_sans_ttf_medium"
                     android:gravity="top"
                     android:hint="자유롭게 작성해보세요."
                     android:inputType="textMultiLine"
@@ -70,14 +79,19 @@
                     android:layout_width="match_parent"
                     android:layout_height="100dp">
 
-                    <Button
+                    <androidx.appcompat.widget.AppCompatButton
                         android:id="@+id/post_save_btn"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="120dp"
-                        android:layout_marginTop="48dp"
+                        android:layout_width="140dp"
+                        android:layout_height="30dp"
+                        android:layout_marginTop="16dp"
+                        android:layout_marginEnd="16dp"
+                        android:background="@drawable/button_style_1"
+                        android:backgroundTint="#6078F0"
+                        android:fontFamily="@font/gmarket_sans_ttf_bold"
                         android:text="저장"
-                        app:layout_constraintStart_toStartOf="parent"
+                        android:textColor="@color/white"
+                        android:textSize="17sp"
+                        app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintTop_toTopOf="parent" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
 

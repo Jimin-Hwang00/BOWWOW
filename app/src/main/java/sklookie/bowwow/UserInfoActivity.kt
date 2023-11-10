@@ -46,7 +46,9 @@ class UserInfoActivity : AppCompatActivity() {
             val editor : SharedPreferences.Editor = pref.edit()
             userInfo.userName = binding.userName.text.toString()
             userInfo.userDevice = spinner.selectedItem.toString()
-            editor.putString("nameValue", userInfo.userName).commit()
+            editor.putString("nameValue", userInfo.userName)
+            editor.putString("userDevice", userInfo.userDevice)
+            editor.commit()
 
             if (id.equals("null") || id.isNullOrEmpty()) {      // LoginActivity에서 구글 로그인이 아직 안 된 경우
                 val myNewRef = myRef.push()

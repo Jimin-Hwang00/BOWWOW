@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="110dp"
-    android:background="@drawable/border">
+    android:background="@drawable/community_border">
 
     <TextView
         android:id="@+id/item_title_txtView"
@@ -13,9 +13,10 @@
         android:layout_marginStart="32dp"
         android:layout_marginTop="16dp"
         android:background="#00FEFEFE"
+        android:fontFamily="@font/gmarket_sans_ttf_medium"
         android:text="title_text_view"
         android:textSize="25dp"
-        android:textStyle="normal"
+        android:textStyle="normal|bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -25,6 +26,7 @@
         android:layout_height="20dp"
         android:layout_marginTop="72dp"
         android:layout_marginEnd="292dp"
+        android:fontFamily="@font/gmarket_sans_ttf_medium"
         android:text="uname"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -35,6 +37,7 @@
         android:layout_height="21dp"
         android:layout_marginTop="72dp"
         android:layout_marginEnd="196dp"
+        android:fontFamily="@font/gmarket_sans_ttf_medium"
         android:text="date"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />

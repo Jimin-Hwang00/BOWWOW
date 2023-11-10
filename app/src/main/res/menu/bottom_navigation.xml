@@ -1,18 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-
     <item
-        android:id="@+id/menu_bottom_menu"
+        android:id="@+id/bluetooth_bottom_menu"
         android:enabled="true"
-        android:icon="@drawable/menu"
-        android:title="메뉴" />
+        android:icon="@drawable/bell_bluetooth"
+        android:title="불루투스" />
     <item
-        android:id="@+id/menu2"
-        android:enabled="true"
-        android:icon="@drawable/training"
-        android:title="훈련" />
-    <item
-        android:id="@+id/menu3"
+        android:id="@+id/home_bottom_menu"
         android:enabled="true"
         android:icon="@drawable/baseline_home_24"
         android:title="홈" />
@@ -22,8 +16,8 @@
         android:icon="@drawable/chat"
         android:title="커뮤니티" />
     <item
-        android:id="@+id/menu5"
+        android:id="@+id/myInfo_bottom_menu"
         android:enabled="true"
-        android:icon="@drawable/trophy"
-        android:title="챌린지" />
+        android:icon="@drawable/user_base"
+        android:title="내 정보" />
 </menu>
