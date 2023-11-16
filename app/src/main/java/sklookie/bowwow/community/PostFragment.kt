@@ -273,6 +273,9 @@ class PostFragment : Fragment(), OnCommunityRecylerItemClick {
                 comments = post?.comments as ArrayList<Comment>
                 comments?.sortBy { it.date }
             }
+            comments.forEach { comment ->
+                comment.uname = dao.getUserNameByUid(comment.uid!!)
+            }
             initCommentRecycler()
 
             setView()
