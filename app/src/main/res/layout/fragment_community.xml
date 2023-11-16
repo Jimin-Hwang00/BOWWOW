@@ -28,13 +28,13 @@
                 android:id="@+id/write_Btn"
                 android:layout_width="109dp"
                 android:layout_height="54dp"
-                android:layout_marginRight="32dp"
-                android:layout_marginBottom="212dp"
+                android:layout_marginRight="28dp"
+                android:layout_marginBottom="30dp"
                 android:backgroundTint="#F0CC60"
                 android:fontFamily="@font/gmarket_sans_ttf_bold"
                 android:textSize="18dp"
                 app:icon="@drawable/pencil_icon"
-                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintBottom_toBottomOf="@+id/main_recyclerView"
                 app:layout_constraintRight_toRightOf="parent"
                 tools:ignore="TextSizeCheck" />
 
