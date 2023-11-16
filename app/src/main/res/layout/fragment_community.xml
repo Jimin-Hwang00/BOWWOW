@@ -7,7 +7,7 @@
     tools:context=".community.CommunityFragment">
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-        android:id="@+id/swiper"
+        android:id="@+id/community_swiper"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 

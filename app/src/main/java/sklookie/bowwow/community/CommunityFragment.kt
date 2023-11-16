@@ -120,7 +120,7 @@ class CommunityFragment : Fragment(), OnCommunityRecylerItemClick {
         }
 
         // 당겨서 새로고침 구현 (게시글 전부 다시 가져오기)
-        binding.swiper.setOnRefreshListener {
+        binding.communitySwiper.setOnRefreshListener {
             lifecycleScope.launch {
                 posts = withContext(Dispatchers.IO) {
                     dao.getAllPosts()!!
@@ -146,7 +146,7 @@ class CommunityFragment : Fragment(), OnCommunityRecylerItemClick {
 
             adapter?.notifyDataSetChanged()
 
-            binding.swiper.isRefreshing = false
+            binding.communitySwiper.isRefreshing = false
         }
     }
 

@@ -188,9 +188,9 @@ class PostFragment : Fragment(), OnCommunityRecylerItemClick {
         }
 
         // 당겨서 새로고침 구현 (게시글 데이터 다시 가져오기)
-        binding.swiper.setOnRefreshListener {
+        binding.postSwiper.setOnRefreshListener {
             updateDataAndView()
-            binding.swiper.isRefreshing = false
+            binding.postSwiper.isRefreshing = false
         }
     }
 

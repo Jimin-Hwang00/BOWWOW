@@ -74,7 +74,7 @@
         android:layout_width="284dp"
         android:layout_height="45dp"
         android:layout_marginStart="32dp"
-        android:layout_marginTop="516dp"
+        android:layout_marginTop="456dp"
         android:text="반려견 이름:"
         android:textSize="25sp"
         android:textStyle="bold"
@@ -98,7 +98,7 @@
         android:layout_width="284dp"
         android:layout_height="45dp"
         android:layout_marginStart="32dp"
-        android:layout_marginTop="588dp"
+        android:layout_marginTop="520dp"
         android:fontFamily="@font/gmarket_sans_ttf_bold"
         android:text="반려인 이름:"
         android:textSize="25sp"
@@ -111,12 +111,24 @@
         android:layout_width="284dp"
         android:layout_height="45dp"
         android:layout_marginStart="32dp"
-        android:layout_marginTop="452dp"
+        android:layout_marginTop="392dp"
         android:fontFamily="@font/gmarket_sans_ttf_bold"
         android:text="설정된 장치:"
         android:textSize="25sp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/tv_my_post"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="32dp"
+        android:fontFamily="@font/gmarket_sans_ttf_medium"
+        android:text="내가 쓴 글"
+        android:textSize="24sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/uNameInfoText" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
