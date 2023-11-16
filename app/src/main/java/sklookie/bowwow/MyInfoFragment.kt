@@ -18,6 +18,7 @@ import com.google.android.gms.tasks.OnSuccessListener
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import sklookie.bowwow.community.EditFragment
+import sklookie.bowwow.community.MyCommentFragment
 import sklookie.bowwow.community.MyPostFragment
 import sklookie.bowwow.databinding.FragmentMyInfoBinding
 
@@ -84,6 +85,10 @@ class MyInfoFragment : Fragment() {
 
         MyInfoBinding.tvMyPost.setOnClickListener {
             parentFragmentManager.beginTransaction().replace(R.id.mainFrameLayout, MyPostFragment()).addToBackStack(null).commit()
+        }
+
+        MyInfoBinding.tvMyComment.setOnClickListener {
+            parentFragmentManager.beginTransaction().replace(R.id.mainFrameLayout, MyCommentFragment()).addToBackStack(null).commit()
         }
     }
 

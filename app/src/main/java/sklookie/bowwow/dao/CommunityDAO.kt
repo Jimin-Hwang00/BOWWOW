@@ -498,4 +498,51 @@ class CommunityDAO {
             }
         })
     }
+
+    suspend fun getMyComments(uid: String): List<Post> = suspendCancellableCoroutine { continuation ->
+        val query = postDbRef.orderByChild("comments")
+
+        query.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val posts = mutableListOf<Post>()
+
+                for (childSnapshot in snapshot.children) {
+                    val postMap = childSnapshot.value as? Map<String, Any?>
+                    if (postMap != null) {
+                        val commentsMap = postMap["comments"] as? Map<String, Any?>
+                        if (commentsMap != null) {
+                            for (commentEntry in commentsMap.entries) {
+                                val commentMap = commentEntry.value as? Map<String, Any?>
+                                if (commentMap != null) {
+                                    val commentUid = commentMap["uid"] as? String
+                                    if (commentUid == uid) {
+                                        val post = Post(
+                                            pid = childSnapshot.key,
+                                            title = postMap["title"] as? String,
+                                            content = postMap["content"] as? String,
+                                            date = postMap["date"] as? String,
+                                            uid = postMap["uid"] as? String,
+                                            uname = "",
+                                            views = postMap["views"] as? String,
+                                            images = postMap["images"] as? MutableList<String>,
+                                            comments = convertComments(postMap["comments"])
+                                        )
+                                        posts.add(post)
+                                        break
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                continuation.resume(posts)
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                Log.e(TAG, error.toString())
+            }
+        })
+    }
+
 }

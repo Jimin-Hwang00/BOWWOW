@@ -1,8 +1,6 @@
 package sklookie.bowwow.community
 
-import android.graphics.Color
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -15,13 +13,11 @@ import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.*
 import sklookie.bowwow.R
 import sklookie.bowwow.dao.CommunityDAO
-import sklookie.bowwow.databinding.FragmentCommunityBinding
-import sklookie.bowwow.databinding.FragmentMyPostBinding
+import sklookie.bowwow.databinding.FragmentMyCommentBinding
 import sklookie.bowwow.dto.Post
 
-const val TAG = "MyPostFragment"
-class MyPostFragment : Fragment(), OnCommunityRecylerItemClick {
-    private lateinit var binding: FragmentMyPostBinding
+class MyCommentFragment : Fragment(), OnCommunityRecylerItemClick {
+    private lateinit var binding: FragmentMyCommentBinding
 
     private var posts = mutableListOf<Post>()
     private var adapter: CommunityAdapter? = null
@@ -47,7 +43,7 @@ class MyPostFragment : Fragment(), OnCommunityRecylerItemClick {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        binding = FragmentMyPostBinding.inflate(inflater, container, false)
+        binding = FragmentMyCommentBinding.inflate(inflater, container, false)
         return binding.root
     }
 
@@ -58,7 +54,7 @@ class MyPostFragment : Fragment(), OnCommunityRecylerItemClick {
         lifecycleScope.launch {
             if (currentUser != null) {
                 posts = withContext(Dispatchers.IO) {
-                    dao.getMyPosts(currentUser.uid)!!
+                    dao.getMyComments(currentUser.uid)!!
                 } as MutableList<Post>
 
                 val userNameJobs = posts.map { post ->
@@ -77,11 +73,11 @@ class MyPostFragment : Fragment(), OnCommunityRecylerItemClick {
         }
 
         // 당겨서 새로고침 구현 (게시글 전부 다시 가져오기)
-        binding.myPostSwiper.setOnRefreshListener {
+        binding.myCommentSwiper.setOnRefreshListener {
             lifecycleScope.launch {
                 if (currentUser != null) {
                     posts = withContext(Dispatchers.IO) {
-                        dao.getMyPosts(currentUser.uid)!!
+                        dao.getMyComments(currentUser.uid)!!
                     } as MutableList<Post>
 
                     val userNameJobs = posts.map { post ->
@@ -99,14 +95,14 @@ class MyPostFragment : Fragment(), OnCommunityRecylerItemClick {
 
             adapter?.notifyDataSetChanged()
 
-            binding.myPostSwiper.isRefreshing = false
+            binding.myCommentSwiper.isRefreshing = false
         }
     }
 
     //    리사이클러뷰와 어댑터 연결 작업
     private fun initRecycler() {
         adapter = CommunityAdapter(requireContext(), this)
-        mainRecyclerView = binding.rcMyPost
+        mainRecyclerView = binding.rcMyComment
 
         mainRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         mainRecyclerView.adapter = adapter
