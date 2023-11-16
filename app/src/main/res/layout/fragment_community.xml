@@ -32,9 +32,8 @@
                 android:layout_marginBottom="212dp"
                 android:backgroundTint="#F0CC60"
                 android:fontFamily="@font/gmarket_sans_ttf_bold"
-                android:text="작성"
                 android:textSize="18dp"
-                app:icon="@android:drawable/ic_input_add"
+                app:icon="@drawable/pencil_icon"
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintRight_toRightOf="parent"
                 tools:ignore="TextSizeCheck" />

@@ -21,9 +21,6 @@ class CommunityAdapter(private val context: Context, listener: OnCommunityRecyle
 
     var datas: MutableList<Post> = mutableListOf()
 
-    val firebaseStorage = FirebaseStorage.getInstance()
-    val rootRef = firebaseStorage.reference
-
     private val mCallback = listener
 
     fun updateDatas(newDatas: MutableList<Post>) {
@@ -45,22 +42,19 @@ class CommunityAdapter(private val context: Context, listener: OnCommunityRecyle
 
         Log.d(TAG, "onBindViewHolder data : ${data}")
 
-        holder.itemView.findViewById<TextView>(R.id.item_title_txtView).text = data.title
-        holder.itemView.findViewById<TextView>(R.id.item_uname_txtView).text = data.uname
+        holder.itemView.findViewById<TextView>(R.id.tv_item_title).text = data.title
+        holder.itemView.findViewById<TextView>(R.id.tv_item_content).text = data.content
+        holder.itemView.findViewById<TextView>(R.id.tv_item_uname).text = data.uname
 
-        val imageView = holder.itemView.findViewById<ImageView>(R.id.item_image_view)
-        if (data.images.isNullOrEmpty()) {
-            imageView.isInvisible = true
-        } else {
-            imageView.setImageBitmap(null)
-            Glide.with(context)
-                .load(data.images!![0].toUri())
-                .into(imageView)
+        if (!data.images.isNullOrEmpty()) {     // 해당 게시글에 이미지가 있을 경우
+            holder.itemView.findViewById<ImageView>(R.id.iv_item_image).visibility = View.VISIBLE
+        } else {                                // 해당 게시글에 이미지가 없을 경우
+            holder.itemView.findViewById<ImageView>(R.id.iv_item_image).visibility = View.INVISIBLE
         }
 
         var date = data.date
         val subDate = date?.substring(0 until 11)
-        holder.itemView.findViewById<TextView>(R.id.item_date_txtView).text = subDate
+        holder.itemView.findViewById<TextView>(R.id.tv_item_date).text = subDate
 
         holder.itemView.setOnClickListener {
             data.pid?.let { pid -> mCallback.onCommunityRecyclerItemClick(pid) }

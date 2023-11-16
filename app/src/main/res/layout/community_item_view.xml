@@ -3,53 +3,77 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="110dp"
+    android:layout_height="150dp"
     android:background="@drawable/community_border">
 
     <TextView
-        android:id="@+id/item_title_txtView"
-        android:layout_width="258dp"
-        android:layout_height="43dp"
-        android:layout_marginStart="32dp"
+        android:id="@+id/tv_item_title"
+        android:layout_width="350dp"
+        android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:background="#00FEFEFE"
-        android:fontFamily="@font/gmarket_sans_ttf_medium"
-        android:text="title_text_view"
-        android:textSize="25dp"
-        android:textStyle="normal|bold"
+        android:fontFamily="@font/gmarket_sans_ttf_bold"
+        android:text="제목"
+        android:textColor="@color/black"
+        android:textSize="16sp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/item_uname_txtView"
-        android:layout_width="87dp"
-        android:layout_height="20dp"
-        android:layout_marginTop="72dp"
-        android:layout_marginEnd="292dp"
+        android:id="@+id/tv_item_content"
+        android:layout_width="350dp"
+        android:layout_height="50dp"
+        android:layout_marginTop="12dp"
+        android:background="#00FEFEFE"
         android:fontFamily="@font/gmarket_sans_ttf_medium"
-        android:text="uname"
+        android:text="내용"
+        android:textColor="@color/black"
+        android:textSize="14sp"
+        android:textStyle="normal"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintHorizontal_bias="0.508"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/tv_item_title" />
 
     <TextView
-        android:id="@+id/item_date_txtView"
+        android:id="@+id/tv_item_uname"
+        android:layout_width="87dp"
+        android:layout_height="20dp"
+        android:layout_marginStart="1dp"
+        android:layout_marginTop="15dp"
+        android:fontFamily="@font/gmarket_sans_ttf_medium"
+        android:text="uname"
+        app:layout_constraintStart_toStartOf="@+id/tv_item_content"
+        app:layout_constraintTop_toBottomOf="@+id/tv_item_content" />
+
+    <TextView
+        android:id="@+id/tv_item_date"
         android:layout_width="86dp"
         android:layout_height="21dp"
-        android:layout_marginTop="72dp"
-        android:layout_marginEnd="196dp"
+        android:layout_marginTop="15dp"
         android:fontFamily="@font/gmarket_sans_ttf_medium"
         android:text="date"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintEnd_toEndOf="@+id/tv_item_content"
+        app:layout_constraintTop_toBottomOf="@+id/tv_item_content" />
+
+    <TextView
+        android:id="@+id/tv_item_more"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/gmarket_sans_ttf_bold"
+        android:text="...더보기"
+        app:layout_constraintBottom_toBottomOf="@+id/tv_item_content"
+        app:layout_constraintEnd_toEndOf="@+id/tv_item_content" />
 
     <ImageView
-        android:id="@+id/item_image_view"
-        android:layout_width="73dp"
-        android:layout_height="77dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="22dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@mipmap/camera_icon" />
+        android:id="@+id/iv_item_image"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginStart="8dp"
+        android:layout_marginTop="8dp"
+        android:visibility="invisible"
+        app:layout_constraintStart_toEndOf="@+id/tv_item_uname"
+        app:layout_constraintTop_toBottomOf="@+id/tv_item_content"
+        app:srcCompat="@drawable/community_image_icon" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
